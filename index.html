@@ -5962,7 +5962,7 @@
     </div>
     
     <div class="chat-footer">
-        Powered by @rxampeny
+        Powered by @rxampeny · <span id="footer-year"></span>
     </div>
 </div>
 
@@ -5981,6 +5981,9 @@
     const fileBtn = document.getElementById('chat-file-btn');
     const fileInput = document.getElementById('chat-file-input');
     const filesPreview = document.getElementById('chat-files-preview');
+
+    // Set dynamic year in footer
+    document.getElementById('footer-year').textContent = new Date().getFullYear();
 
     // Array para almacenar archivos seleccionados
     let selectedFiles = [];
