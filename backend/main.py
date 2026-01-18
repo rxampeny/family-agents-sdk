@@ -10,7 +10,7 @@ from agents import (
     RunContextWrapper, Agent, ModelSettings, TResponseInputItem, 
     Runner, RunConfig, trace
 )
-from openai.types.shared.reasoning import Reasoning
+# Reasoning removed - not supported by gpt-4o
 
 app = FastAPI(title="Gestor Familiar API")
 
@@ -80,11 +80,7 @@ gestor_familiar = Agent(
         image_generation
     ],
     model_settings=ModelSettings(
-        store=True,
-        reasoning=Reasoning(
-            effort="medium",
-            summary="auto"
-        )
+        store=True
     )
 )
 
