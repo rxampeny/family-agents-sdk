@@ -5657,87 +5657,425 @@
         });
     </script>
 
-  <!-- Botó per obrir el xat -->
-<button id="chat-toggle" type="button">💬 Assistència</button>
+<!-- Estilos del chat -->
+<style>
+/* Botón flotante para abrir chat */
+#chat-toggle {
+    position: fixed;
+    bottom: 20px;
+    right: 20px;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    border: none;
+    border-radius: 50px;
+    padding: 15px 25px;
+    font-size: 16px;
+    font-weight: 600;
+    cursor: pointer;
+    box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);
+    z-index: 999;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    transition: all 0.3s ease;
+}
 
-<!-- Contenidor del xat -->
+#chat-toggle:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 16px rgba(102, 126, 234, 0.6);
+}
+
+/* Contenedor del chat */
+#chat-wrapper {
+    display: none;
+    position: fixed;
+    bottom: 20px;
+    right: 20px;
+    width: 400px;
+    height: 600px;
+    background: white;
+    border-radius: 20px;
+    box-shadow: 0 10px 40px rgba(0,0,0,0.3);
+    z-index: 1000;
+    flex-direction: column;
+    overflow: hidden;
+}
+
+/* Header del chat */
+.chat-header {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    padding: 20px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.chat-header h3 {
+    margin: 0;
+    font-size: 1.1rem;
+    font-weight: 600;
+}
+
+#chat-close {
+    background: rgba(255,255,255,0.2);
+    border: none;
+    color: white;
+    font-size: 24px;
+    width: 35px;
+    height: 35px;
+    border-radius: 50%;
+    cursor: pointer;
+    transition: background 0.3s;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+#chat-close:hover {
+    background: rgba(255,255,255,0.3);
+}
+
+/* Área de mensajes */
+#chat-messages {
+    flex: 1;
+    padding: 20px;
+    overflow-y: auto;
+    background: #f5f5f5;
+}
+
+.message {
+    margin-bottom: 15px;
+    display: flex;
+    flex-direction: column;
+    animation: slideIn 0.3s ease;
+}
+
+@keyframes slideIn {
+    from {
+        opacity: 0;
+        transform: translateY(10px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.message.user {
+    align-items: flex-end;
+}
+
+.message.bot {
+    align-items: flex-start;
+}
+
+.message-bubble {
+    max-width: 80%;
+    padding: 12px 16px;
+    border-radius: 18px;
+    word-wrap: break-word;
+    line-height: 1.4;
+}
+
+.message.user .message-bubble {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+}
+
+.message.bot .message-bubble {
+    background: white;
+    color: #333;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+}
+
+/* Indicador de escritura */
+.typing-indicator {
+    display: none;
+    padding: 10px 16px;
+    background: white;
+    border-radius: 18px;
+    width: fit-content;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+}
+
+.typing-indicator.active {
+    display: block;
+}
+
+.typing-indicator span {
+    display: inline-block;
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background: #667eea;
+    margin: 0 2px;
+    animation: typing 1.4s infinite;
+}
+
+.typing-indicator span:nth-child(2) {
+    animation-delay: 0.2s;
+}
+
+.typing-indicator span:nth-child(3) {
+    animation-delay: 0.4s;
+}
+
+@keyframes typing {
+    0%, 60%, 100% {
+        transform: translateY(0);
+    }
+    30% {
+        transform: translateY(-10px);
+    }
+}
+
+/* Input del chat */
+.chat-input-container {
+    padding: 15px;
+    background: white;
+    border-top: 1px solid #e0e0e0;
+    display: flex;
+    gap: 10px;
+}
+
+#chat-input {
+    flex: 1;
+    padding: 12px 16px;
+    border: 2px solid #e0e0e0;
+    border-radius: 20px;
+    font-size: 14px;
+    outline: none;
+    transition: border-color 0.3s;
+}
+
+#chat-input:focus {
+    border-color: #667eea;
+}
+
+#chat-send {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    border: none;
+    border-radius: 20px;
+    padding: 12px 20px;
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: transform 0.2s;
+}
+
+#chat-send:hover:not(:disabled) {
+    transform: scale(1.05);
+}
+
+#chat-send:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+
+/* Badge de "powered by" */
+.chat-footer {
+    padding: 8px;
+    text-align: center;
+    font-size: 11px;
+    color: #999;
+    background: #f8f9fa;
+    border-top: 1px solid #e0e0e0;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+    #chat-wrapper {
+        width: calc(100vw - 20px);
+        height: calc(100vh - 100px);
+        bottom: 10px;
+        right: 10px;
+    }
+    
+    #chat-toggle {
+        bottom: 15px;
+        right: 15px;
+    }
+}
+</style>
+
+<!-- Botón para abrir el chat -->
+<button id="chat-toggle" type="button">
+    💬 Assistència Familiar
+</button>
+
+<!-- Contenedor del chat -->
 <div id="chat-wrapper">
-  <button id="chat-close" type="button" aria-label="Tancar xat">✕</button>
-  <openai-chatkit id="chat-family"></openai-chatkit>
+    <div class="chat-header">
+        <h3>🌳 Gestor Familiar</h3>
+        <button id="chat-close" type="button" aria-label="Tancar xat">✕</button>
+    </div>
+    
+    <div id="chat-messages">
+        <div class="message bot">
+            <div class="message-bubble">
+                Hola! Sóc el teu gestor familiar amb accés a l'arbre genealògic. Pregunta'm sobre aniversaris, familiars, o qualsevol informació. També puc buscar a la web i crear imatges! 🌳
+            </div>
+        </div>
+    </div>
+    
+    <div class="chat-input-container">
+        <input 
+            type="text" 
+            id="chat-input" 
+            placeholder="Escriu el teu missatge..."
+            autocomplete="off"
+        >
+        <button id="chat-send" type="button">Enviar</button>
+    </div>
+    
+    <div class="chat-footer">
+        Powered by OpenAI Agents SDK
+    </div>
 </div>
 
 <script>
-  // Toggle UI (obrir/tancar)
-  (function () {
-    const toggleBtn = document.getElementById("chat-toggle");
-    const chatWrapper = document.getElementById("chat-wrapper");
-    const closeBtn = document.getElementById("chat-close");
-
+(function() {
+    // ⚠️ IMPORTANTE: Cambia esta URL después de desplegar en Railway
+    const RAILWAY_API_URL = 'https://tu-app.railway.app/chat';
+    
+    // Elementos del DOM
+    const toggleBtn = document.getElementById('chat-toggle');
+    const chatWrapper = document.getElementById('chat-wrapper');
+    const closeBtn = document.getElementById('chat-close');
+    const chatMessages = document.getElementById('chat-messages');
+    const chatInput = document.getElementById('chat-input');
+    const sendBtn = document.getElementById('chat-send');
+    
+    // Funciones de UI
     function openChat() {
-      chatWrapper.style.display = "block";
-      toggleBtn.style.display = "none";
+        chatWrapper.style.display = 'flex';
+        toggleBtn.style.display = 'none';
+        chatInput.focus();
     }
+    
     function closeChat() {
-      chatWrapper.style.display = "none";
-      toggleBtn.style.display = "flex";
+        chatWrapper.style.display = 'none';
+        toggleBtn.style.display = 'flex';
     }
-
-    toggleBtn.addEventListener("click", openChat);
-    closeBtn.addEventListener("click", closeChat);
-
-    // (Opcional) tancar amb ESC quan el xat està obert
-    document.addEventListener("keydown", (e) => {
-      if (e.key === "Escape" && chatWrapper.style.display === "block") closeChat();
+    
+    // Agregar mensaje al chat
+    function addMessage(text, isUser = false) {
+        const messageDiv = document.createElement('div');
+        messageDiv.className = `message ${isUser ? 'user' : 'bot'}`;
+        
+        const bubble = document.createElement('div');
+        bubble.className = 'message-bubble';
+        bubble.textContent = text;
+        
+        messageDiv.appendChild(bubble);
+        chatMessages.appendChild(messageDiv);
+        
+        // Scroll al final
+        chatMessages.scrollTop = chatMessages.scrollHeight;
+    }
+    
+    // Mostrar indicador de escritura
+    function showTypingIndicator() {
+        const indicator = document.createElement('div');
+        indicator.className = 'message bot';
+        indicator.id = 'typing-indicator-msg';
+        
+        const bubble = document.createElement('div');
+        bubble.className = 'typing-indicator active';
+        bubble.innerHTML = '<span></span><span></span><span></span>';
+        
+        indicator.appendChild(bubble);
+        chatMessages.appendChild(indicator);
+        chatMessages.scrollTop = chatMessages.scrollHeight;
+    }
+    
+    // Ocultar indicador de escritura
+    function hideTypingIndicator() {
+        const indicator = document.getElementById('typing-indicator-msg');
+        if (indicator) {
+            indicator.remove();
+        }
+    }
+    
+    // Enviar mensaje
+    async function sendMessage() {
+        const message = chatInput.value.trim();
+        
+        if (!message) return;
+        
+        // Agregar mensaje del usuario
+        addMessage(message, true);
+        chatInput.value = '';
+        
+        // Deshabilitar input mientras procesa
+        sendBtn.disabled = true;
+        chatInput.disabled = true;
+        
+        // Mostrar indicador de escritura
+        showTypingIndicator();
+        
+        try {
+            const response = await fetch(RAILWAY_API_URL, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    message: message,
+                    conversation_history: []
+                })
+            });
+            
+            if (!response.ok) {
+                throw new Error('Error al comunicar amb el servidor');
+            }
+            
+            const data = await response.json();
+            
+            // Ocultar indicador
+            hideTypingIndicator();
+            
+            // Agregar respuesta del bot
+            addMessage(data.response, false);
+            
+        } catch (error) {
+            hideTypingIndicator();
+            console.error('Error:', error);
+            
+            // Mensaje de error más informativo
+            if (RAILWAY_API_URL.includes('tu-app.railway.app')) {
+                addMessage('⚠️ Configura la URL de Railway en el codi (línia 5947). Consulta el README.', false);
+            } else {
+                addMessage('Ho sento, hi ha hagut un error. Torna-ho a intentar. 😔', false);
+            }
+        } finally {
+            // Re-habilitar input
+            sendBtn.disabled = false;
+            chatInput.disabled = false;
+            chatInput.focus();
+        }
+    }
+    
+    // Event listeners
+    toggleBtn.addEventListener('click', openChat);
+    closeBtn.addEventListener('click', closeChat);
+    sendBtn.addEventListener('click', sendMessage);
+    
+    chatInput.addEventListener('keypress', (e) => {
+        if (e.key === 'Enter') {
+            sendMessage();
+        }
     });
-
-    // user id persistent per navegador
-    const KEY = "chatkit_user_id";
-    let user = localStorage.getItem(KEY);
-    if (!user) {
-      user = (crypto.randomUUID ? crypto.randomUUID() : (Date.now() + "-" + Math.random()));
-      localStorage.setItem(KEY, user);
-    }
-
-    async function fetchClientSecret() {
-      const res = await fetch("/.netlify/functions/chatkit-session", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ user })
-      });
-      if (!res.ok) {
-        const txt = await res.text().catch(() => "");
-        throw new Error("chatkit-session failed: " + res.status + " " + txt);
-      }
-      const data = await res.json();
-      return data.client_secret;
-    }
-
-function initChatKit() {
-  const el = document.getElementById("chat-family");
-  el.setOptions({
-    api: {
-      async getClientSecret() {
-        return await fetchClientSecret();
-      }
-    },
-    startScreen: {
-      greeting: "Com et puc ajudar avui?"
-    },
-    composer: {
-      placeholder: "Escriu el dubte respecte la família",
-      attachments: { enabled: true }
-    }
-  });
-}
-
-
-    // Espera a que el Web Component estigui registrat
-    (function boot(retries = 80) {
-      if (customElements.get("openai-chatkit")) return initChatKit();
-      if (retries <= 0) return console.error("ChatKit no ha carregat");
-      setTimeout(() => boot(retries - 1), 100);
-    })();
-  })();
+    
+    // Cerrar con ESC
+    document.addEventListener('keydown', (e) => {
+        if (e.key === 'Escape' && chatWrapper.style.display === 'flex') {
+            closeChat();
+        }
+    });
+})();
 </script>
 
 
