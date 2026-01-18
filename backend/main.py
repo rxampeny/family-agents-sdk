@@ -9,8 +9,8 @@ from PyPDF2 import PdfReader
 
 # Importar Agents SDK
 from agents import (
-    FileSearchTool, WebSearchTool, ImageGenerationTool, 
-    RunContextWrapper, Agent, ModelSettings, TResponseInputItem, 
+    FileSearchTool, WebSearchTool,
+    RunContextWrapper, Agent, ModelSettings, TResponseInputItem,
     Runner, RunConfig, trace
 )
 # Reasoning removed - not supported by gpt-4o
@@ -43,16 +43,6 @@ web_search_preview = WebSearchTool(
     }
 )
 
-image_generation = ImageGenerationTool(tool_config={
-    "type": "image_generation",
-    "background": "auto",
-    "model": "gpt-image-1",
-    "moderation": "auto",
-    "output_format": "png",
-    "quality": "auto",
-    "size": "auto"
-})
-
 class GestorFamiliarContext:
     def __init__(self, workflow_input_as_text: str):
         self.workflow_input_as_text = workflow_input_as_text
@@ -68,7 +58,7 @@ A la pregunta:
  {workflow_input_as_text}
 
 Vas a buscar la informació a la tool Arbre Familiar. En la respuesta no des la referencia de donde has obtenido la información.
-També pots buscar informació a la web i crear imatges.
+També pots buscar informació a la web i analitzar imatges o PDFs que t'enviïn.
 A la resposta no indiquis la referència origen.
 Respon sempre en català i intenta ser breu."""
 
@@ -79,8 +69,7 @@ gestor_familiar = Agent(
     model="gpt-4o",  # Modelo estable
     tools=[
         file_search,
-        web_search_preview,
-        image_generation
+        web_search_preview
     ],
     model_settings=ModelSettings(
         store=True
