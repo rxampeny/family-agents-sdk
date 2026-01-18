@@ -40,24 +40,46 @@ Code.gs functions → Twilio SMS / Gmail
 
 **Sheet ID:** `19ixIeSMF93UQKOoJGu7o_lsBCAqnf4Eo7CAIwtKMMI0`
 
-Columns:
-- A: Nom (name)
-- B: Dia (day)
-- C: Mes (month)
-- D: Any Naixement (birth year)
-- E: Telèfon (phone)
-- F: Email
-- G: Gènere (gender: Masculí/Femení)
-- H: Viu (alive: Sí/No)
-- I: Última modificació (last modified timestamp)
-- J: Pare ID (father ID)
-- K: Mare ID (mother ID)
-- L: Parella ID (partner ID)
-- M: URL Foto (photo URL)
-- N-V: Eliminados logs (deleted people records)
-- W: Manteniment (maintenance mode flag in W2)
-- X-AB: Log Email (email sending logs)
-- AC-AG: Log SMS (SMS sending logs)
+Columns (A-AJ):
+
+| Col | Camp | Descripció |
+|-----|------|------------|
+| A | Nom | Nombre |
+| B | Dia | Día nacimiento |
+| C | Mes | Mes nacimiento |
+| D | AnyNaixement | Año nacimiento |
+| E | Telefon | Teléfono (+34...) |
+| F | Email | Correo electrónico |
+| G | Gènere | Masculí/Femení |
+| H | Viu | Sí/No (vivo/fallecido) |
+| I | Última modificació | Timestamp última modificación |
+| J | Pare ID | ID del padre |
+| K | Mare ID | ID de la madre |
+| L | Parella ID | ID de la pareja |
+| M | URL Foto | Enlace a foto |
+| N | estatRelacio | Estado de la relación |
+| O | Lloc Naixement | Lugar de nacimiento |
+| P | Any Mort | Año de fallecimiento |
+| Q | Eliminados - Nom | Log borrados: Nombre |
+| R | Eliminados - Dia | Log borrados: Día |
+| S | Eliminados - Mes | Log borrados: Mes |
+| T | Eliminados - AnyNaixement | Log borrados: Año |
+| U | Eliminados - Telèfon | Log borrados: Teléfono |
+| V | Eliminados - Email | Log borrados: Email |
+| W | Eliminados - Gènere | Log borrados: Género |
+| X | Eliminados - Viu | Log borrados: Vivo |
+| Y | Eliminados - Data | Log borrados: Fecha borrado |
+| Z | Manteniment | Flag modo mantenimiento (Z2) |
+| AA | Log - Email | Log emails: Destinatario |
+| AB | Log - Data | Log emails: Fecha |
+| AC | Log - Estat | Log emails: Estado |
+| AD | Log - Error | Log emails: Error |
+| AE | Log - Nom | Log emails: Nombre |
+| AF | SMS - Telèfon | Log SMS: Teléfono |
+| AG | SMS - Data | Log SMS: Fecha |
+| AH | SMS - Estat | Log SMS: Estado |
+| AI | SMS - Error | Log SMS: Error |
+| AJ | SMS - Nom | Log SMS: Nombre |
 
 ## API Endpoints
 
@@ -211,7 +233,7 @@ All CSS is inline in `index.html` starting ~line 22. Look for the `<style>` tag.
 ### Reminders not sending
 - Verify trigger exists in Apps Script (⏰ Triggers)
 - Check tomorrow actually has birthdays (`testBirthdayReminders()`)
-- Check maintenance mode is off (cell W2 in Sheet)
+- Check maintenance mode is off (cell Z2 in Sheet)
 
 ### SMS not working
 - Verify Twilio credentials in Code.gs
