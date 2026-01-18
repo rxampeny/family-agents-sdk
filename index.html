@@ -2094,32 +2094,10 @@
             }
         }
     
-        /* Chat flotant (ChatKit) */
-        #chat-toggle{
-            position:fixed;
-            bottom:20px;
-            right:20px;
-            z-index:2100;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            color:#fff;
-            border:none;
-            border-radius:50px;
-            padding:14px 18px;
-            font-size:14px;
-            font-weight:700;
-            cursor:pointer;
-            box-shadow:0 8px 20px rgba(0,0,0,.25);
-            display:none; /* ocult fins login */
-            align-items:center;
-            gap:8px;
-        }
-
-        #chat-wrapper{
-            position:fixed;
-            bottom:20px;
-            right:20px;
-            z-index:2000;
-            display:none; /* ocult per defecte */
+        /* Chat flotant - estilos principales están en la sección del chat */
+        /* Solo mantenemos z-index aquí para asegurar orden correcto */
+        #chat-toggle {
+            z-index: 2100;
         }
 
         openai-chatkit{
@@ -2155,20 +2133,7 @@
         }
 
         @media (max-width: 768px) {
-            #chat-toggle{
-                bottom:65px; /* Alineat amb SMS a l'esquerra */
-                right:15px;
-                padding:10px 15px;
-                font-size:0.8rem;
-            }
-            #chat-wrapper{
-                bottom:0;
-                right:0;
-                left:0;
-                top:0;
-                width:100%;
-                height:100%;
-            }
+            /* Estilos móviles del chat están en la sección de estilos del chat */
             openai-chatkit{
                 width:100%;
                 height:100%;
@@ -5959,15 +5924,22 @@
 /* Responsive */
 @media (max-width: 768px) {
     #chat-wrapper {
-        width: calc(100vw - 20px);
-        height: calc(100vh - 100px);
-        bottom: 10px;
-        right: 10px;
+        width: 100vw;
+        height: 100vh;
+        bottom: 0;
+        right: 0;
+        border-radius: 0;
     }
-    
+
     #chat-toggle {
-        bottom: 15px;
+        bottom: 80px; /* Por encima del logout button */
         right: 15px;
+        padding: 12px 16px;
+        font-size: 14px;
+    }
+
+    .chat-header h3 {
+        font-size: 16px;
     }
 }
 </style>
