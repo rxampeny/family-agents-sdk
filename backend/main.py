@@ -46,7 +46,6 @@ image_generation = ImageGenerationTool(tool_config={
     "model": "gpt-image-1",
     "moderation": "auto",
     "output_format": "png",
-    "partial_images": 3,
     "quality": "auto",
     "size": "auto"
 })
