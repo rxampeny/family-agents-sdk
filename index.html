@@ -5874,6 +5874,78 @@
     cursor: not-allowed;
 }
 
+/* Botón de adjuntar archivo */
+#chat-file-btn {
+    background: #f0f0f0;
+    color: #666;
+    border: none;
+    border-radius: 50%;
+    width: 44px;
+    height: 44px;
+    font-size: 20px;
+    cursor: pointer;
+    transition: all 0.2s;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+#chat-file-btn:hover {
+    background: #e0e0e0;
+    color: #667eea;
+}
+
+#chat-file-input {
+    display: none;
+}
+
+/* Preview de archivos adjuntos */
+.chat-files-preview {
+    padding: 10px 15px;
+    background: #f9f9f9;
+    border-top: 1px solid #e0e0e0;
+    display: none;
+    flex-wrap: wrap;
+    gap: 8px;
+}
+
+.chat-files-preview.has-files {
+    display: flex;
+}
+
+.file-preview-item {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    padding: 6px 10px;
+    background: white;
+    border: 1px solid #e0e0e0;
+    border-radius: 16px;
+    font-size: 12px;
+    color: #666;
+}
+
+.file-preview-item img {
+    width: 24px;
+    height: 24px;
+    object-fit: cover;
+    border-radius: 4px;
+}
+
+.file-preview-item .file-icon {
+    font-size: 16px;
+}
+
+.file-preview-item .remove-file {
+    cursor: pointer;
+    color: #999;
+    margin-left: 4px;
+}
+
+.file-preview-item .remove-file:hover {
+    color: #e53935;
+}
+
 /* Badge de "powered by" */
 .chat-footer {
     padding: 8px;
@@ -5920,10 +5992,14 @@
         </div>
     </div>
     
+    <div id="chat-files-preview" class="chat-files-preview"></div>
+
     <div class="chat-input-container">
-        <input 
-            type="text" 
-            id="chat-input" 
+        <button id="chat-file-btn" type="button" title="Adjuntar arxiu (imatge o PDF)">📎</button>
+        <input type="file" id="chat-file-input" accept="image/*,.pdf" multiple>
+        <input
+            type="text"
+            id="chat-input"
             placeholder="Escriu el teu missatge..."
             autocomplete="off"
         >
@@ -5947,6 +6023,12 @@
     const chatMessages = document.getElementById('chat-messages');
     const chatInput = document.getElementById('chat-input');
     const sendBtn = document.getElementById('chat-send');
+    const fileBtn = document.getElementById('chat-file-btn');
+    const fileInput = document.getElementById('chat-file-input');
+    const filesPreview = document.getElementById('chat-files-preview');
+
+    // Array para almacenar archivos seleccionados
+    let selectedFiles = [];
     
     // Funciones de UI
     function openChat() {
@@ -5998,52 +6080,146 @@
             indicator.remove();
         }
     }
-    
+
+    // Convertir archivo a base64
+    function fileToBase64(file) {
+        return new Promise((resolve, reject) => {
+            const reader = new FileReader();
+            reader.onload = () => {
+                const base64 = reader.result.split(',')[1];
+                resolve(base64);
+            };
+            reader.onerror = reject;
+            reader.readAsDataURL(file);
+        });
+    }
+
+    // Mostrar preview de archivos
+    function updateFilesPreview() {
+        filesPreview.innerHTML = '';
+        if (selectedFiles.length === 0) {
+            filesPreview.classList.remove('has-files');
+            return;
+        }
+        filesPreview.classList.add('has-files');
+        selectedFiles.forEach((file, index) => {
+            const item = document.createElement('div');
+            item.className = 'file-preview-item';
+            const isImage = file.type.startsWith('image/');
+            if (isImage) {
+                const img = document.createElement('img');
+                img.src = URL.createObjectURL(file);
+                item.appendChild(img);
+            } else {
+                const icon = document.createElement('span');
+                icon.className = 'file-icon';
+                icon.textContent = '📄';
+                item.appendChild(icon);
+            }
+            const name = document.createElement('span');
+            name.textContent = file.name.length > 15 ? file.name.substring(0, 12) + '...' : file.name;
+            item.appendChild(name);
+            const remove = document.createElement('span');
+            remove.className = 'remove-file';
+            remove.textContent = '✕';
+            remove.onclick = () => {
+                selectedFiles.splice(index, 1);
+                updateFilesPreview();
+            };
+            item.appendChild(remove);
+            filesPreview.appendChild(item);
+        });
+    }
+
+    // Manejar selección de archivos
+    function handleFileSelect(e) {
+        const files = Array.from(e.target.files);
+        files.forEach(file => {
+            if (file.type.startsWith('image/') || file.type === 'application/pdf') {
+                if (file.size <= 10 * 1024 * 1024) {
+                    selectedFiles.push(file);
+                } else {
+                    alert(`L'arxiu ${file.name} és massa gran (màxim 10MB)`);
+                }
+            }
+        });
+        updateFilesPreview();
+        fileInput.value = '';
+    }
+
+    // Limpiar archivos seleccionados
+    function clearSelectedFiles() {
+        selectedFiles = [];
+        updateFilesPreview();
+    }
+
     // Enviar mensaje
     async function sendMessage() {
         const message = chatInput.value.trim();
-        
-        if (!message) return;
-        
-        // Agregar mensaje del usuario
-        addMessage(message, true);
+        const hasFiles = selectedFiles.length > 0;
+
+        if (!message && !hasFiles) return;
+
+        // Mostrar mensaje del usuario con indicador de archivos
+        let userDisplay = message;
+        if (hasFiles) {
+            const fileNames = selectedFiles.map(f => f.name).join(', ');
+            userDisplay = message ? `${message} [📎 ${fileNames}]` : `[📎 ${fileNames}]`;
+        }
+        addMessage(userDisplay, true);
         chatInput.value = '';
-        
+
         // Deshabilitar input mientras procesa
         sendBtn.disabled = true;
         chatInput.disabled = true;
-        
+        fileBtn.disabled = true;
+
         // Mostrar indicador de escritura
         showTypingIndicator();
-        
+
         try {
+            // Preparar archivos en base64
+            const filesData = [];
+            for (const file of selectedFiles) {
+                const base64 = await fileToBase64(file);
+                filesData.push({
+                    name: file.name,
+                    type: file.type,
+                    data: base64
+                });
+            }
+
             const response = await fetch(RAILWAY_API_URL, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
                 },
                 body: JSON.stringify({
-                    message: message,
-                    conversation_history: []
+                    message: message || 'Analitza aquest arxiu',
+                    conversation_history: [],
+                    files: filesData
                 })
             });
-            
+
             if (!response.ok) {
                 throw new Error('Error al comunicar amb el servidor');
             }
-            
+
             const data = await response.json();
-            
+
             // Ocultar indicador
             hideTypingIndicator();
-            
+
             // Agregar respuesta del bot
             addMessage(data.response, false);
-            
+
+            // Limpiar archivos seleccionados
+            clearSelectedFiles();
+
         } catch (error) {
             hideTypingIndicator();
             console.error('Error:', error);
-            
+
             // Mensaje de error más informativo
             if (RAILWAY_API_URL.includes('tu-app.railway.app')) {
                 addMessage('⚠️ Configura la URL de Railway en el codi (línia 5947). Consulta el README.', false);
@@ -6054,6 +6230,7 @@
             // Re-habilitar input
             sendBtn.disabled = false;
             chatInput.disabled = false;
+            fileBtn.disabled = false;
             chatInput.focus();
         }
     }
@@ -6062,13 +6239,17 @@
     toggleBtn.addEventListener('click', openChat);
     closeBtn.addEventListener('click', closeChat);
     sendBtn.addEventListener('click', sendMessage);
-    
+
+    // File upload listeners
+    fileBtn.addEventListener('click', () => fileInput.click());
+    fileInput.addEventListener('change', handleFileSelect);
+
     chatInput.addEventListener('keypress', (e) => {
         if (e.key === 'Enter') {
             sendMessage();
         }
     });
-    
+
     // Cerrar con ESC
     document.addEventListener('keydown', (e) => {
         if (e.key === 'Escape' && chatWrapper.style.display === 'flex') {

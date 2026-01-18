@@ -2,7 +2,10 @@ from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
 import os
-from typing import Optional
+import base64
+import io
+from typing import Optional, List
+from PyPDF2 import PdfReader
 
 # Importar Agents SDK
 from agents import (
@@ -91,13 +94,44 @@ gestor_familiar = Agent(
 class WorkflowInput(BaseModel):
     input_as_text: str
 
+class FileData(BaseModel):
+    name: str
+    type: str  # mime type: image/jpeg, image/png, application/pdf
+    data: str  # base64 encoded
+
 class ChatRequest(BaseModel):
     message: str
     conversation_history: Optional[list] = []
+    files: Optional[List[FileData]] = []
 
 class ChatResponse(BaseModel):
     response: str
     status: str
+
+# ============================================
+# FUNCIONES AUXILIARES PARA ARCHIVOS
+# ============================================
+
+def extract_pdf_text(base64_data: str) -> str:
+    """Extrae texto de un PDF codificado en base64"""
+    try:
+        pdf_bytes = base64.b64decode(base64_data)
+        pdf_file = io.BytesIO(pdf_bytes)
+        reader = PdfReader(pdf_file)
+        text = ""
+        for page in reader.pages:
+            text += page.extract_text() or ""
+        return text.strip()
+    except Exception as e:
+        return f"[Error al leer PDF: {str(e)}]"
+
+def is_image(mime_type: str) -> bool:
+    """Comprueba si el tipo MIME es una imagen"""
+    return mime_type.startswith("image/")
+
+def is_pdf(mime_type: str) -> bool:
+    """Comprueba si el tipo MIME es un PDF"""
+    return mime_type == "application/pdf"
 
 # ============================================
 # ENDPOINTS
@@ -121,24 +155,46 @@ async def health_check():
 async def chat(request: ChatRequest):
     """
     Endpoint principal para el chat con Agents SDK
+    Soporta archivos: imágenes (análisis visual) y PDFs (extracción de texto)
     """
     try:
-        # Preparar el input del workflow
-        workflow_input = WorkflowInput(input_as_text=request.message)
-        
-        # Ejecutar el workflow
-        workflow = workflow_input.model_dump()
-        
+        # Preparar el mensaje con contexto de archivos
+        message_text = request.message
+        pdf_context = ""
+
+        # Procesar archivos adjuntos
+        content_items = []
+
+        if request.files:
+            for file in request.files:
+                if is_pdf(file.type):
+                    # Extraer texto del PDF y añadirlo al contexto
+                    pdf_text = extract_pdf_text(file.data)
+                    if pdf_text:
+                        pdf_context += f"\n\n[Contingut del PDF '{file.name}']: {pdf_text}"
+                elif is_image(file.type):
+                    # Añadir imagen para análisis visual
+                    content_items.append({
+                        "type": "input_image",
+                        "image_url": f"data:{file.type};base64,{file.data}"
+                    })
+
+        # Combinar mensaje con contexto de PDFs
+        full_message = message_text
+        if pdf_context:
+            full_message = f"{message_text}\n{pdf_context}"
+
+        # Añadir el texto del mensaje
+        content_items.insert(0, {
+            "type": "input_text",
+            "text": full_message
+        })
+
         # Construir historial de conversación
         conversation_history: list[TResponseInputItem] = [
             {
                 "role": "user",
-                "content": [
-                    {
-                        "type": "input_text",
-                        "text": workflow["input_as_text"]
-                    }
-                ]
+                "content": content_items
             }
         ]
         
@@ -152,7 +208,7 @@ async def chat(request: ChatRequest):
                     "workflow_id": "wf_69678af259b88190b90406b5dee162630cb508e02a638d96"
                 }),
                 context=GestorFamiliarContext(
-                    workflow_input_as_text=workflow["input_as_text"]
+                    workflow_input_as_text=full_message
                 )
             )
             
