@@ -1,0 +1,52 @@
+DATOS PARA COPIAR EN GOOGLE SHEETS
+===================================
+
+INSTRUCCIONES:
+1. Selecciona desde la línea "César Márquez García" hasta "David Rosique"
+2. Copia (Ctrl+C)
+3. En Google Sheets, haz click en la celda A2 (la primera celda debajo de las cabeceras)
+4. Pega (Ctrl+V)
+
+DATOS (desde fila 2):
+---------------------
+
+César Márquez García	4	4	660823474
+Carlos Herrero	13	6	653754789
+Fermín	6	10	687627716
+Javier Alcázar	11	10	654775970
+Josele	4	4	610283728
+MªJosé García	19	7	646323397
+Óscar Guardado	6	8	639975491
+Yolanda Vicente	11	6	628822655
+Yolanda Martín	18	7	678522965
+Txema	10	12	679208956
+Rubén Claver	16	7	677258709
+Rosa Garriz	30	1	617078769
+Roberto León	4	12	678572513
+Ricardo Sirera	24	2	692869224
+Rafa Xampeny	19	2	609085519
+Pedro Cilleruelo	11	7	693056907
+Nuria Romero	15	2	655127039
+Mónica Sánchez	5	1	619455954
+Mónica Pérez	7	12	627954101
+Mónica Fdez.	6	5	686690002
+Mar Gutiérrez	17	9	629403109
+Lyss Miró	14	11	621182162
+Loli Arjona	20	3	687460703
+Juanjo Hierro	9	8	639948864
+Juan Luis López	13	9	649144350
+José Antonio Pérez	23	10	636091794
+Joel Solana	2	2	649911518
+Javier Castilla	19	4	630575368
+Ismael Sopena	11	8	610897315
+Irene Martínez	20	12	659474612
+Elena Andújar	21	1	676785714
+Carles Boldú	21	1	647738522
+Cori Cuquejo	26	2	647619220
+Salud	26	2	646823473
+Conchi Navarro	17	6	678761063
+Conchi Chueca	20	5	616199200
+Pilar Charles	27	4	629537533
+David Rosique	19	3	660595167
+
+TOTAL: 38 registros

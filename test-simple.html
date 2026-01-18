@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>Test Simple POST</title>
+</head>
+<body>
+    <h1>Test Simple Google Apps Script POST</h1>
+    <button onclick="testPost()">Probar POST</button>
+    <pre id="result"></pre>
+
+    <script>
+        const URL = 'https://script.google.com/macros/s/AKfycbyH_zxFyGjYs2oT-fvssGAnNNXavfZmWeoXW6coCOGoNxTOqHAqTjgNYz7chxG2Kang3g/exec';
+
+        async function testPost() {
+            const resultDiv = document.getElementById('result');
+            resultDiv.textContent = 'Probando POST...';
+
+            try {
+                const response = await fetch(URL, {
+                    method: 'POST',
+                    mode: 'no-cors',  // IMPORTANTE: Añadir esto
+                    headers: {
+                        'Content-Type': 'text/plain',
+                    },
+                    body: JSON.stringify({
+                        action: 'CREATE',
+                        data: {
+                            nom: 'TEST',
+                            dia: 1,
+                            mes: 1,
+                            telefon: '000'
+                        }
+                    })
+                });
+
+                resultDiv.textContent = 'Respuesta recibida:\n' +
+                    'Status: ' + response.status + '\n' +
+                    'Type: ' + response.type;
+
+                // Con no-cors no podemos leer el body, pero al menos sabemos si llega
+                if (response.type === 'opaque') {
+                    resultDiv.textContent += '\n\n✅ La petición llegó al servidor!\n' +
+                        'Ahora verifica en Google Sheets si apareció "TEST"';
+                }
+
+            } catch (error) {
+                resultDiv.textContent = '❌ Error:\n' + error.toString();
+                console.error('Error completo:', error);
+            }
+        }
+    </script>
+</body>
+</html>

@@ -1,0 +1,270 @@
+<!DOCTYPE html>
+<html lang="ca">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test Google Sheets API</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 50px auto;
+            padding: 20px;
+            background: #f5f5f5;
+        }
+        .test-section {
+            background: white;
+            padding: 20px;
+            margin: 20px 0;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        button {
+            background: #4CAF50;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 4px;
+            cursor: pointer;
+            margin: 5px;
+        }
+        button:hover {
+            background: #45a049;
+        }
+        .delete-btn {
+            background: #f44336;
+        }
+        .delete-btn:hover {
+            background: #da190b;
+        }
+        .result {
+            margin-top: 10px;
+            padding: 10px;
+            border-radius: 4px;
+            white-space: pre-wrap;
+            font-family: monospace;
+            font-size: 12px;
+        }
+        .success {
+            background: #d4edda;
+            border: 1px solid #c3e6cb;
+            color: #155724;
+        }
+        .error {
+            background: #f8d7da;
+            border: 1px solid #f5c6cb;
+            color: #721c24;
+        }
+        h2 {
+            color: #333;
+            border-bottom: 2px solid #4CAF50;
+            padding-bottom: 10px;
+        }
+    </style>
+</head>
+<body>
+    <h1>🧪 Test Google Sheets API</h1>
+
+    <div class="test-section">
+        <h2>1. Test GET (Leer datos)</h2>
+        <button onclick="testGet()">🔍 Probar GET</button>
+        <div id="getResult"></div>
+    </div>
+
+    <div class="test-section">
+        <h2>2. Test POST CREATE (Añadir aniversario de prueba)</h2>
+        <button onclick="testCreate()">➕ Probar CREATE</button>
+        <div id="createResult"></div>
+    </div>
+
+    <div class="test-section">
+        <h2>3. Test POST UPDATE (Actualizar aniversario de prueba)</h2>
+        <button onclick="testUpdate()">✏️ Probar UPDATE</button>
+        <div id="updateResult"></div>
+    </div>
+
+    <div class="test-section">
+        <h2>4. Test POST DELETE (Eliminar aniversario de prueba)</h2>
+        <button onclick="testDelete()" class="delete-btn">🗑️ Probar DELETE</button>
+        <div id="deleteResult"></div>
+    </div>
+
+    <script>
+        const GOOGLE_APPS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbyH_zxFyGjYs2oT-fvssGAnNNXavfZmWeoXW6coCOGoNxTOqHAqTjgNYz7chxG2Kang3g/exec';
+
+        async function testGet() {
+            const resultDiv = document.getElementById('getResult');
+            resultDiv.innerHTML = '⏳ Probando GET...';
+
+            try {
+                console.log('GET Request to:', GOOGLE_APPS_SCRIPT_URL);
+
+                const response = await fetch(GOOGLE_APPS_SCRIPT_URL);
+                console.log('Response status:', response.status);
+                console.log('Response headers:', [...response.headers.entries()]);
+
+                const result = await response.json();
+                console.log('Response data:', result);
+
+                if (result.success) {
+                    resultDiv.className = 'result success';
+                    resultDiv.innerHTML = `✅ GET exitoso!\n\nRegistros encontrados: ${result.count}\n\nPrimeros 3 registros:\n${JSON.stringify(result.data.slice(0, 3), null, 2)}`;
+                } else {
+                    resultDiv.className = 'result error';
+                    resultDiv.innerHTML = `❌ GET falló\n\nError: ${result.error}`;
+                }
+            } catch (error) {
+                console.error('GET Error:', error);
+                resultDiv.className = 'result error';
+                resultDiv.innerHTML = `❌ Error de red\n\n${error.toString()}\n\nCheck la consola (F12) para más detalles`;
+            }
+        }
+
+        async function testCreate() {
+            const resultDiv = document.getElementById('createResult');
+            resultDiv.innerHTML = '⏳ Probando CREATE...';
+
+            const testBirthday = {
+                nom: 'TEST_API',
+                dia: 1,
+                mes: 1,
+                telefon: '000000000'
+            };
+
+            try {
+                console.log('POST CREATE Request to:', GOOGLE_APPS_SCRIPT_URL);
+                console.log('Request body:', { action: 'CREATE', data: testBirthday });
+
+                const response = await fetch(GOOGLE_APPS_SCRIPT_URL, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'text/plain',
+                    },
+                    body: JSON.stringify({
+                        action: 'CREATE',
+                        data: testBirthday
+                    })
+                });
+
+                console.log('Response status:', response.status);
+                console.log('Response headers:', [...response.headers.entries()]);
+
+                const result = await response.json();
+                console.log('Response data:', result);
+
+                if (result.success) {
+                    resultDiv.className = 'result success';
+                    resultDiv.innerHTML = `✅ CREATE exitoso!\n\n${result.message}\n\nAhora ve a Google Sheets y verifica que aparezca "TEST_API" al final de la lista.`;
+                } else {
+                    resultDiv.className = 'result error';
+                    resultDiv.innerHTML = `❌ CREATE falló\n\nError: ${result.error}`;
+                }
+            } catch (error) {
+                console.error('CREATE Error:', error);
+                resultDiv.className = 'result error';
+                resultDiv.innerHTML = `❌ Error de red\n\n${error.toString()}\n\nCheck la consola (F12) para más detalles`;
+            }
+        }
+
+        async function testUpdate() {
+            const resultDiv = document.getElementById('updateResult');
+            resultDiv.innerHTML = '⏳ Probando UPDATE...';
+
+            const oldData = {
+                nom: 'TEST_API',
+                dia: 1,
+                mes: 1,
+                telefon: '000000000'
+            };
+
+            const newData = {
+                nom: 'TEST_API_MODIFICADO',
+                dia: 2,
+                mes: 2,
+                telefon: '111111111'
+            };
+
+            try {
+                console.log('POST UPDATE Request to:', GOOGLE_APPS_SCRIPT_URL);
+                console.log('Request body:', { action: 'UPDATE', oldData, newData });
+
+                const response = await fetch(GOOGLE_APPS_SCRIPT_URL, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'text/plain',
+                    },
+                    body: JSON.stringify({
+                        action: 'UPDATE',
+                        oldData: oldData,
+                        newData: newData
+                    })
+                });
+
+                console.log('Response status:', response.status);
+                console.log('Response headers:', [...response.headers.entries()]);
+
+                const result = await response.json();
+                console.log('Response data:', result);
+
+                if (result.success) {
+                    resultDiv.className = 'result success';
+                    resultDiv.innerHTML = `✅ UPDATE exitoso!\n\n${result.message}\n\nAhora ve a Google Sheets y verifica que "TEST_API" cambió a "TEST_API_MODIFICADO".`;
+                } else {
+                    resultDiv.className = 'result error';
+                    resultDiv.innerHTML = `❌ UPDATE falló\n\nError: ${result.error}`;
+                }
+            } catch (error) {
+                console.error('UPDATE Error:', error);
+                resultDiv.className = 'result error';
+                resultDiv.innerHTML = `❌ Error de red\n\n${error.toString()}\n\nCheck la consola (F12) para más detalles`;
+            }
+        }
+
+        async function testDelete() {
+            const resultDiv = document.getElementById('deleteResult');
+            resultDiv.innerHTML = '⏳ Probando DELETE...';
+
+            const testData = {
+                nom: 'TEST_API_MODIFICADO',
+                dia: 2,
+                mes: 2,
+                telefon: '111111111'
+            };
+
+            try {
+                console.log('POST DELETE Request to:', GOOGLE_APPS_SCRIPT_URL);
+                console.log('Request body:', { action: 'DELETE', data: testData });
+
+                const response = await fetch(GOOGLE_APPS_SCRIPT_URL, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'text/plain',
+                    },
+                    body: JSON.stringify({
+                        action: 'DELETE',
+                        data: testData
+                    })
+                });
+
+                console.log('Response status:', response.status);
+                console.log('Response headers:', [...response.headers.entries()]);
+
+                const result = await response.json();
+                console.log('Response data:', result);
+
+                if (result.success) {
+                    resultDiv.className = 'result success';
+                    resultDiv.innerHTML = `✅ DELETE exitoso!\n\n${result.message}\n\nAhora ve a Google Sheets y verifica que "TEST_API_MODIFICADO" ya no esté.`;
+                } else {
+                    resultDiv.className = 'result error';
+                    resultDiv.innerHTML = `❌ DELETE falló\n\nError: ${result.error}`;
+                }
+            } catch (error) {
+                console.error('DELETE Error:', error);
+                resultDiv.className = 'result error';
+                resultDiv.innerHTML = `❌ Error de red\n\n${error.toString()}\n\nCheck la consola (F12) para más detalles`;
+            }
+        }
+    </script>
+</body>
+</html>
