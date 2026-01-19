@@ -2112,7 +2112,7 @@
         /* #chat-close estilos están en la sección del chat */
 
     </style>
-<script src="https://cdn.platform.openai.com/deployments/chatkit/chatkit.js" async></script>
+<!-- Script de OpenAI chatkit eliminado - no se usa -->
 </head>
 <body>
     <!-- Modal de contraseña -->
@@ -5665,6 +5665,30 @@
     background: rgba(255,255,255,0.3);
 }
 
+.chat-header-buttons {
+    display: flex;
+    gap: 8px;
+}
+
+#chat-reset {
+    background: rgba(255,255,255,0.2);
+    border: none;
+    color: white;
+    font-size: 18px;
+    width: 35px;
+    height: 35px;
+    border-radius: 50%;
+    cursor: pointer;
+    transition: background 0.3s;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+#chat-reset:hover {
+    background: rgba(255,255,255,0.3);
+}
+
 /* Área de mensajes */
 #chat-messages {
     flex: 1;
@@ -5951,7 +5975,10 @@
 <div id="chat-wrapper">
     <div class="chat-header">
         <h3>🌳 Gestor Familiar</h3>
-        <button id="chat-close" type="button" aria-label="Tancar xat">✕</button>
+        <div class="chat-header-buttons">
+            <button id="chat-reset" type="button" aria-label="Nova conversa" title="Nova conversa">🔄</button>
+            <button id="chat-close" type="button" aria-label="Tancar xat">✕</button>
+        </div>
     </div>
     
     <div id="chat-messages">
@@ -5990,6 +6017,7 @@
     const toggleBtn = document.getElementById('chat-toggle');
     const chatWrapper = document.getElementById('chat-wrapper');
     const closeBtn = document.getElementById('chat-close');
+    const resetBtn = document.getElementById('chat-reset');
     const chatMessages = document.getElementById('chat-messages');
     const chatInput = document.getElementById('chat-input');
     const sendBtn = document.getElementById('chat-send');
@@ -6014,7 +6042,28 @@
         chatWrapper.style.display = 'none';
         toggleBtn.style.display = 'flex';
     }
-    
+
+    function resetChat() {
+        // Clear all messages
+        chatMessages.innerHTML = '';
+
+        // Add initial welcome message back
+        const welcomeDiv = document.createElement('div');
+        welcomeDiv.className = 'message bot';
+        welcomeDiv.innerHTML = `
+            <div class="message-bubble">
+                Hola! Sóc el teu gestor familiar amb accés a l'arbre genealògic. Pregunta'm sobre aniversaris, familiars, o qualsevol informació. També puc analitzar imatges i PDFs (📎) i buscar a la web! 🌳
+            </div>
+        `;
+        chatMessages.appendChild(welcomeDiv);
+
+        // Clear any selected files
+        clearSelectedFiles();
+
+        // Focus input
+        chatInput.focus();
+    }
+
     // Agregar mensaje al chat
     function addMessage(text, isUser = false) {
         const messageDiv = document.createElement('div');
@@ -6211,6 +6260,7 @@
     // Event listeners
     toggleBtn.addEventListener('click', openChat);
     closeBtn.addEventListener('click', closeChat);
+    resetBtn.addEventListener('click', resetChat);
     sendBtn.addEventListener('click', sendMessage);
 
     // File upload listeners
