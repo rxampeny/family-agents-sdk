@@ -2290,20 +2290,6 @@
                     </small>
                 </div>
 
-                <div class="form-group">
-                    <label for="formEnviarRecordatoris">🔔 Recordatoris</label>
-                    <div style="display:flex; align-items:center; gap:10px; padding:6px 0;">
-                        <input type="checkbox" id="formEnviarRecordatoris"
-                               style="width:18px; height:18px; cursor:pointer; accent-color:#667eea;">
-                        <span style="font-size:0.95rem; color:#333;">
-                            Enviar recordatoris quan sigui el seu aniversari
-                        </span>
-                    </div>
-                    <small style="color:#6c757d; font-size:0.82rem;">
-                        Si es desactiva, ningú rebrà avisos quan sigui el seu aniversari
-                    </small>
-                </div>
-
                 <!-- Sección de relaciones familiares -->
                 <div style="margin-top: 20px; padding-top: 15px; border-top: 2px solid #e0e0e0;">
                     <div style="font-weight: 600; color: #667eea; margin-bottom: 15px; font-size: 1.05rem;">
@@ -4608,8 +4594,6 @@
             document.getElementById('formLlocNaixement').value = '';
             document.getElementById('formAnyMort').value = '';
             document.getElementById('formAnyMortContainer').style.display = 'none';
-            document.getElementById('formEnviarRecordatoris').checked = true;
-
             // Poblar dropdowns de relaciones
             populateFamilyDropdowns();
 
@@ -4644,7 +4628,6 @@
             // Cargar nuevos campos
             document.getElementById('formLlocNaixement').value = currentEditingPerson.llocNaixement || '';
             document.getElementById('formAnyMort').value = currentEditingPerson.anyMort || '';
-            document.getElementById('formEnviarRecordatoris').checked = currentEditingPerson.enviarRecordatoris !== false;
 
             // Mostrar anyMort si persona está fallecida
             if (currentEditingPerson.viu === 'No') {
@@ -4804,8 +4787,7 @@
             const isEditing = currentEditingIndex >= 0;
             const oldBirthday = isEditing ? { ...dadesAniversaris[currentEditingIndex] } : null; // Deep copy para preservar rowNumber
 
-            const enviarRecordatoris = document.getElementById('formEnviarRecordatoris').checked;
-            const newBirthday = { nom, dia, mes, anyNaixement, telefon, email, genere, viu, pareId, mareId, parellaId, urlFoto, estatRelacio, llocNaixement, anyMort, enviarRecordatoris };
+            const newBirthday = { nom, dia, mes, anyNaixement, telefon, email, genere, viu, pareId, mareId, parellaId, urlFoto, estatRelacio, llocNaixement, anyMort };
 
             // Si está editando, preservar rowNumber del dato antiguo
             if (isEditing && oldBirthday && oldBirthday.rowNumber) {

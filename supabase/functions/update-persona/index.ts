@@ -25,7 +25,6 @@ interface UpdatePersonaRequest {
     estatRelacio?: string;
     llocNaixement?: string;
     anyMort?: number;
-    enviarRecordatoris?: boolean;
   };
 }
 
@@ -113,10 +112,7 @@ serve(async (req) => {
         url_foto: newData.urlFoto || null,
         estat_relacio: newData.estatRelacio || null,
         lloc_naixement: newData.llocNaixement || null,
-        any_mort: newData.anyMort || null,
-        enviar_recordatoris: newData.enviarRecordatoris !== undefined
-          ? newData.enviarRecordatoris
-          : true
+        any_mort: newData.anyMort || null
       })
       .eq('id', existingPersona.id)
       .select()
