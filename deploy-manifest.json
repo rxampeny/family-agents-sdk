@@ -1,0 +1,141 @@
+{
+  "files": {
+    "/index.html": "b3e7db20d2a94362e5c62205be6b0f57633d6ba3",
+    "/supabase-client.js": "b92f704265cbbc82a4d1afddde2fe130ebc159ad",
+    "/netlify.toml": "32887975ce5d2cdb7f7cec061876425d19b40c19",
+    "/public/aniversaris.json": "aec86750ad0013cf7967da924c24e032db73f6d1",
+    "/public/aniversaris_complet.json": "4f03d7ab9252f578b9cbed1bd2ce81ea08b0c6cc",
+    "/public/aviramon.jpg": "5bfe440508edea9a5ed866b9a571059d592592f1",
+    "/public/beatrice.png": "587cb25da655e68866b82d42217f8728162f3d27",
+    "/public/comfort.jpg": "d10d8c227189b969617eeb217d1a8cda77698baf",
+    "/public/Elena.jpg": "76c6c2bde628ffc9f92967b25a4b005896c52fdb",
+    "/public/escola-victor-catala.jpg": "bba606f830e681b5feb79fb16a02194cbced7694",
+    "/public/escola-victor-catala1.jpg": "ce8a405304c4c067e5738cbd4e439e5ad92f7a65",
+    "/public/Haritz.jpg": "10e542797820c50c5b250adf6f7de32cc6ffe63b",
+    "/public/iaiaclotilde.jpg": "878a40a4bf1344a4113998cae4272cc56666c2ed",
+    "/public/iaiamaria.jpg": "ee1042cb48b1dc5e767baea6931eef44ee2f9114",
+    "/public/icon-app.svg": "cdb0f88ace81cb900e8c9f4e9a3a4bf705b77e01",
+    "/public/icon-login.svg": "c07b72873d214ace16cc9c83ec6a5125a4179366",
+    "/public/jordi.png": "266c9e3fabd8835de7d4e5e191f6e5ed5002654a",
+    "/public/JorMiquel.jpg": "e6aac0d11d4d78c0dc19b5cac0f9254bec7cccdb",
+    "/public/joseba.png": "4e52cc4c76a7ade93fc368033c24d7d19675977e",
+    "/public/Lois.jpg": "71d6a02f3332c62aa2f95ac709f6ae8dedb5e318",
+    "/public/lois.png": "803a179186073453c747de964d2df1420764f16f",
+    "/public/mama.jpg": "202d2143be34c5b7eb183b1e3337853f86381228",
+    "/public/miquel.png": "ddb365cc98f6bb387a6d0a0266ddddd45787b67f",
+    "/public/papa.jpg": "b54be1a6b624fb93a6e647dc687b46441fd260a3",
+    "/public/placeholder-familia.svg": "0316dccf339c04c40f9606ffca97bc26e2342c8e",
+    "/public/Rafel.jpg": "9ad49cd8aec0f625866a687f78102f565ba55489",
+    "/public/ramon.jpg": "a5c17f80403c1ada3eced5b5cb2da97f9dbabb3b"
+  },
+  "fileContents": {
+    "/index.html": {
+      "hash": "b3e7db20d2a94362e5c62205be6b0f57633d6ba3",
+      "size": 217508
+    },
+    "/supabase-client.js": {
+      "hash": "b92f704265cbbc82a4d1afddde2fe130ebc159ad",
+      "size": 14662
+    },
+    "/netlify.toml": {
+      "hash": "32887975ce5d2cdb7f7cec061876425d19b40c19",
+      "size": 96
+    },
+    "/public/aniversaris.json": {
+      "hash": "aec86750ad0013cf7967da924c24e032db73f6d1",
+      "size": 3663
+    },
+    "/public/aniversaris_complet.json": {
+      "hash": "4f03d7ab9252f578b9cbed1bd2ce81ea08b0c6cc",
+      "size": 4103
+    },
+    "/public/aviramon.jpg": {
+      "hash": "5bfe440508edea9a5ed866b9a571059d592592f1",
+      "size": 3300
+    },
+    "/public/beatrice.png": {
+      "hash": "587cb25da655e68866b82d42217f8728162f3d27",
+      "size": 280807
+    },
+    "/public/comfort.jpg": {
+      "hash": "d10d8c227189b969617eeb217d1a8cda77698baf",
+      "size": 6736
+    },
+    "/public/Elena.jpg": {
+      "hash": "76c6c2bde628ffc9f92967b25a4b005896c52fdb",
+      "size": 8160
+    },
+    "/public/escola-victor-catala.jpg": {
+      "hash": "bba606f830e681b5feb79fb16a02194cbced7694",
+      "size": 1711644
+    },
+    "/public/escola-victor-catala1.jpg": {
+      "hash": "ce8a405304c4c067e5738cbd4e439e5ad92f7a65",
+      "size": 138360
+    },
+    "/public/Haritz.jpg": {
+      "hash": "10e542797820c50c5b250adf6f7de32cc6ffe63b",
+      "size": 9159
+    },
+    "/public/iaiaclotilde.jpg": {
+      "hash": "878a40a4bf1344a4113998cae4272cc56666c2ed",
+      "size": 3648
+    },
+    "/public/iaiamaria.jpg": {
+      "hash": "ee1042cb48b1dc5e767baea6931eef44ee2f9114",
+      "size": 3800
+    },
+    "/public/icon-app.svg": {
+      "hash": "cdb0f88ace81cb900e8c9f4e9a3a4bf705b77e01",
+      "size": 1397
+    },
+    "/public/icon-login.svg": {
+      "hash": "c07b72873d214ace16cc9c83ec6a5125a4179366",
+      "size": 1341
+    },
+    "/public/jordi.png": {
+      "hash": "266c9e3fabd8835de7d4e5e191f6e5ed5002654a",
+      "size": 167773
+    },
+    "/public/JorMiquel.jpg": {
+      "hash": "e6aac0d11d4d78c0dc19b5cac0f9254bec7cccdb",
+      "size": 15885
+    },
+    "/public/joseba.png": {
+      "hash": "4e52cc4c76a7ade93fc368033c24d7d19675977e",
+      "size": 563732
+    },
+    "/public/Lois.jpg": {
+      "hash": "71d6a02f3332c62aa2f95ac709f6ae8dedb5e318",
+      "size": 4089
+    },
+    "/public/lois.png": {
+      "hash": "803a179186073453c747de964d2df1420764f16f",
+      "size": 50532
+    },
+    "/public/mama.jpg": {
+      "hash": "202d2143be34c5b7eb183b1e3337853f86381228",
+      "size": 7522
+    },
+    "/public/miquel.png": {
+      "hash": "ddb365cc98f6bb387a6d0a0266ddddd45787b67f",
+      "size": 133719
+    },
+    "/public/papa.jpg": {
+      "hash": "b54be1a6b624fb93a6e647dc687b46441fd260a3",
+      "size": 7204
+    },
+    "/public/placeholder-familia.svg": {
+      "hash": "0316dccf339c04c40f9606ffca97bc26e2342c8e",
+      "size": 1513
+    },
+    "/public/Rafel.jpg": {
+      "hash": "9ad49cd8aec0f625866a687f78102f565ba55489",
+      "size": 12758
+    },
+    "/public/ramon.jpg": {
+      "hash": "a5c17f80403c1ada3eced5b5cb2da97f9dbabb3b",
+      "size": 8389
+    }
+  }
+}
