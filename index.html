@@ -2290,6 +2290,20 @@
                     </small>
                 </div>
 
+                <div class="form-group">
+                    <label for="formEnviarRecordatoris">🔔 Recordatoris</label>
+                    <div style="display:flex; align-items:center; gap:10px; padding:6px 0;">
+                        <input type="checkbox" id="formEnviarRecordatoris"
+                               style="width:18px; height:18px; cursor:pointer; accent-color:#667eea;">
+                        <span style="font-size:0.95rem; color:#333;">
+                            Enviar recordatoris quan sigui el seu aniversari
+                        </span>
+                    </div>
+                    <small style="color:#6c757d; font-size:0.82rem;">
+                        Si es desactiva, ningú rebrà avisos quan sigui el seu aniversari
+                    </small>
+                </div>
+
                 <!-- Sección de relaciones familiares -->
                 <div style="margin-top: 20px; padding-top: 15px; border-top: 2px solid #e0e0e0;">
                     <div style="font-weight: 600; color: #667eea; margin-bottom: 15px; font-size: 1.05rem;">
@@ -2387,6 +2401,9 @@
         </div>
     </div>
 
+    <!-- Cliente Supabase (reemplaza Google Apps Script) -->
+    <script src="supabase-client.js"></script>
+
     <script>
         // Sistema de contraseña con hash SHA-256
     
@@ -2436,7 +2453,7 @@
             return sessionAge < maxSessionAge;
         }
 
-        // Base de datos de aniversarios (se carga dinámicamente desde Google Sheets)
+        // Base de datos de aniversarios (se carga dinámicamente desde Supabase)
         const dadesAniversaris = [];
 
         // Frases motivadoras para cada mes
@@ -2455,394 +2472,14 @@
             "🎄 Nadal arriba, celebrem amb il·lusió!" // Desembre
         ];
 
-        // Configuración de Google Sheets API
-        const GOOGLE_APPS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbyH_zxFyGjYs2oT-fvssGAnNNXavfZmWeoXW6coCOGoNxTOqHAqTjgNYz7chxG2Kang3g/exec';
-        let isSyncing = false;
-
         // ============================================
-        // MÓDULO DE API PARA GOOGLE SHEETS
+        // API SUPABASE (cargado desde supabase-client.js)
+        // Las funciones fetchBirthdays, addBirthdayToSheet,
+        // addBirthdayToSheetForzado, updateBirthdayInSheet,
+        // deleteBirthdayFromSheet, sendBirthdayEmailsManually,
+        // sendBirthdaySMSManually, showMaintenanceMode y
+        // showSyncMessage están definidas en supabase-client.js
         // ============================================
-
-        /**
-         * Cargar todos los aniversarios desde Google Sheets
-         */
-        async function fetchBirthdays() {
-            try {
-                const response = await fetch(GOOGLE_APPS_SCRIPT_URL);
-                const result = await response.json();
-
-                // Verificar modo mantenimiento
-                if (result.maintenance) {
-                    showMaintenanceMode(result.message);
-                    return null;
-                }
-
-                if (result.success && result.data) {
-                    return result.data;
-                } else {
-                    console.error('Error al cargar datos:', result.error);
-                    return null;
-                }
-            } catch (error) {
-                console.error('Error de red al cargar aniversarios:', error);
-                return null;
-            }
-        }
-
-        /**
-         * Mostrar pantalla de mantenimiento
-         */
-        function showMaintenanceMode(message) {
-            document.body.innerHTML = `
-                <div style="
-                    display: flex;
-                    flex-direction: column;
-                    align-items: center;
-                    justify-content: center;
-                    height: 100vh;
-                    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-                    color: white;
-                    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-                    text-align: center;
-                    padding: 20px;
-                ">
-                    <div style="font-size: 5rem; margin-bottom: 20px;">🔧</div>
-                    <h1 style="font-size: 2.5rem; margin: 0 0 20px 0; font-weight: 600;">Manteniment</h1>
-                    <p style="font-size: 1.3rem; max-width: 600px; line-height: 1.6; opacity: 0.95;">
-                        ${message || 'En manteniment, disculpa les molèsties. En breu tornem'}
-                    </p>
-                    <button onclick="location.reload()" style="
-                        margin-top: 30px;
-                        padding: 12px 30px;
-                        font-size: 1rem;
-                        background: white;
-                        color: #667eea;
-                        border: none;
-                        border-radius: 25px;
-                        cursor: pointer;
-                        font-weight: 600;
-                        box-shadow: 0 4px 15px rgba(0,0,0,0.2);
-                        transition: transform 0.2s;
-                    " onmouseover="this.style.transform='scale(1.05)'" onmouseout="this.style.transform='scale(1)'">
-                        🔄 Tornar a intentar
-                    </button>
-                </div>
-            `;
-        }
-
-        /**
-         * Añadir un nuevo aniversario a Google Sheets
-         */
-        async function addBirthdayToSheet(birthday) {
-            if (isSyncing) return { success: false, error: 'Sincronización en curso' };
-            isSyncing = true;
-
-            try {
-                const response = await fetch(GOOGLE_APPS_SCRIPT_URL, {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'text/plain',
-                    },
-                    body: JSON.stringify({
-                        action: 'CREATE',
-                        data: birthday
-                    })
-                });
-
-                const result = await response.json();
-                isSyncing = false;
-
-                if (result.success) {
-                    console.log('Aniversario añadido a Google Sheets');
-                }
-                return result; // Retornar el resultado completo con tipo de error si existe
-            } catch (error) {
-                isSyncing = false;
-                console.error('Error de red al añadir:', error);
-                return { success: false, error: error.toString() };
-            }
-        }
-
-        /**
-         * Añadir un aniversario forzadamente (sin validación de duplicados)
-         */
-        async function addBirthdayToSheetForzado(birthday) {
-            if (isSyncing) return { success: false, error: 'Sincronización en curso' };
-            isSyncing = true;
-
-            try {
-                const response = await fetch(GOOGLE_APPS_SCRIPT_URL, {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'text/plain',
-                    },
-                    body: JSON.stringify({
-                        action: 'CREATE_FORCE',
-                        data: birthday
-                    })
-                });
-
-                const result = await response.json();
-                isSyncing = false;
-
-                if (result.success) {
-                    console.log('Aniversario añadido forzadamente a Google Sheets');
-                }
-                return result;
-            } catch (error) {
-                isSyncing = false;
-                console.error('Error de red al añadir forzadamente:', error);
-                return { success: false, error: error.toString() };
-            }
-        }
-
-        /**
-         * Actualizar un aniversario existente en Google Sheets
-         */
-        async function updateBirthdayInSheet(oldData, newData) {
-            if (isSyncing) return false;
-            isSyncing = true;
-
-            try {
-                const response = await fetch(GOOGLE_APPS_SCRIPT_URL, {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'text/plain',
-                    },
-                    body: JSON.stringify({
-                        action: 'UPDATE',
-                        oldData: oldData,
-                        newData: newData
-                    })
-                });
-
-                const result = await response.json();
-                isSyncing = false;
-
-                if (result.success) {
-                    console.log('Aniversario actualizado en Google Sheets');
-                    return true;
-                } else {
-                    console.error('Error al actualizar:', result.error);
-                    return false;
-                }
-            } catch (error) {
-                isSyncing = false;
-                console.error('Error de red al actualizar:', error);
-                return false;
-            }
-        }
-
-        /**
-         * Eliminar un aniversario de Google Sheets
-         */
-        async function deleteBirthdayFromSheet(birthday) {
-            if (isSyncing) return false;
-            isSyncing = true;
-
-            try {
-                const response = await fetch(GOOGLE_APPS_SCRIPT_URL, {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'text/plain',
-                    },
-                    body: JSON.stringify({
-                        action: 'DELETE',
-                        data: birthday
-                    })
-                });
-
-                const result = await response.json();
-                isSyncing = false;
-
-                if (result.success) {
-                    console.log('Aniversario eliminado de Google Sheets');
-                    return true;
-                } else {
-                    console.error('Error al eliminar:', result.error);
-                    return false;
-                }
-            } catch (error) {
-                isSyncing = false;
-                console.error('Error de red al eliminar:', error);
-                return false;
-            }
-        }
-
-        /**
-         * Enviar emails de cumpleaños manualmente
-         */
-        async function sendBirthdayEmailsManually() {
-            // Verificar si hay cumpleaños hoy
-            const now = new Date();
-            const cumpleHoy = dadesAniversaris.filter(d =>
-                d.dia === now.getDate() && d.mes === (now.getMonth() + 1)
-            );
-
-            // Si no hay cumpleaños hoy
-            if (cumpleHoy.length === 0) {
-                alert('No hi ha aniversaris avui per enviar emails.');
-                return;
-            }
-
-            // Verificar si tienen emails
-            const sinEmail = cumpleHoy.filter(d => !d.email || d.email.trim() === '');
-            const conEmail = cumpleHoy.filter(d => d.email && d.email.trim() !== '');
-
-            if (conEmail.length === 0) {
-                alert(`Avui és l'aniversari de:\n\n${cumpleHoy.map(d => `• ${d.nom}`).join('\n')}\n\nPerò cap d'ells té email registrat.\n\nSi us plau, afegeix els emails primer.`);
-                return;
-            }
-
-            // Mostrar información de a quién se enviará
-            let mensaje = '';
-            if (conEmail.length > 0) {
-                mensaje = `S'enviaran emails a:\n\n${conEmail.map(d => `✅ ${d.nom}`).join('\n')}`;
-            }
-            if (sinEmail.length > 0) {
-                mensaje += `\n\n⚠️ Sense email (no s'enviarà):\n${sinEmail.map(d => `• ${d.nom}`).join('\n')}`;
-            }
-            mensaje += '\n\nVols continuar?';
-
-            if (!confirm(mensaje)) {
-                return;
-            }
-
-            const btn = document.getElementById('sendEmailsBtn');
-            const originalText = btn.innerHTML;
-            btn.disabled = true;
-            btn.innerHTML = '⏳ Enviant...';
-
-            try {
-                const response = await fetch(GOOGLE_APPS_SCRIPT_URL, {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'text/plain',
-                    },
-                    body: JSON.stringify({
-                        action: 'SEND_EMAILS'
-                    })
-                });
-
-                const result = await response.json();
-
-                if (result.success) {
-                    showSyncMessage('✅ Emails enviats correctament', false);
-                } else {
-                    showSyncMessage('⚠️ Error: ' + (result.error || 'Error desconegut'), true);
-                }
-
-            } catch (error) {
-                console.error('Error al enviar emails:', error);
-                showSyncMessage('⚠️ Error de xarxa al enviar emails', true);
-            } finally {
-                btn.disabled = false;
-                btn.innerHTML = originalText;
-            }
-        }
-
-        /**
-         * Enviar SMS de cumpleaños manualmente
-         */
-        async function sendBirthdaySMSManually() {
-            // Verificar si hay cumpleaños hoy
-            const now = new Date();
-            const cumpleHoy = dadesAniversaris.filter(d =>
-                d.dia === now.getDate() && d.mes === (now.getMonth() + 1)
-            );
-
-            // Si no hay cumpleaños hoy
-            if (cumpleHoy.length === 0) {
-                alert('No hi ha aniversaris avui per enviar SMS.');
-                return;
-            }
-
-            // Verificar si tienen teléfono
-            const sinTelefon = cumpleHoy.filter(d => !d.telefon || d.telefon.toString().trim() === '');
-            const conTelefon = cumpleHoy.filter(d => d.telefon && d.telefon.toString().trim() !== '');
-
-            if (conTelefon.length === 0) {
-                alert(`Avui és l'aniversari de:\n\n${cumpleHoy.map(d => `• ${d.nom}`).join('\n')}\n\nPerò cap d'ells té telèfon registrat.\n\nSi us plau, afegeix els telèfons primer.`);
-                return;
-            }
-
-            // Mostrar información de a quién se enviará
-            let mensaje = '';
-            if (conTelefon.length > 0) {
-                mensaje = `S'enviaran SMS a:\n\n${conTelefon.map(d => `✅ ${d.nom} (${d.telefon})`).join('\n')}`;
-            }
-            if (sinTelefon.length > 0) {
-                mensaje += `\n\n⚠️ Sense telèfon (no s'enviarà):\n${sinTelefon.map(d => `• ${d.nom}`).join('\n')}`;
-            }
-            mensaje += '\n\nVols continuar?';
-
-            if (!confirm(mensaje)) {
-                return;
-            }
-
-            const btn = document.getElementById('sendSmsBtn');
-            const originalText = btn.innerHTML;
-            btn.disabled = true;
-            btn.innerHTML = '⏳ Enviant...';
-
-            try {
-                const response = await fetch(GOOGLE_APPS_SCRIPT_URL, {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'text/plain',
-                    },
-                    body: JSON.stringify({
-                        action: 'SEND_SMS'
-                    })
-                });
-
-                const result = await response.json();
-
-                if (result.success) {
-                    showSyncMessage('✅ SMS enviats correctament', false);
-                } else {
-                    showSyncMessage('⚠️ Error: ' + (result.error || 'Error desconegut'), true);
-                }
-
-            } catch (error) {
-                console.error('Error al enviar SMS:', error);
-                showSyncMessage('⚠️ Error de xarxa al enviar SMS', true);
-            } finally {
-                btn.disabled = false;
-                btn.innerHTML = originalText;
-            }
-        }
-
-        /**
-         * Mostrar mensaje de sincronización
-         */
-        function showSyncMessage(message, isError = false) {
-            const existingMsg = document.getElementById('syncMessage');
-            if (existingMsg) existingMsg.remove();
-
-            const msgDiv = document.createElement('div');
-            msgDiv.id = 'syncMessage';
-            msgDiv.style.cssText = `
-                position: fixed;
-                top: 20px;
-                right: 20px;
-                background: ${isError ? 'linear-gradient(135deg, #dc3545 0%, #c82333 100%)' : 'linear-gradient(135deg, #28a745 0%, #218838 100%)'};
-                color: white;
-                padding: 12px 20px;
-                border-radius: 8px;
-                box-shadow: 0 4px 12px rgba(0,0,0,0.3);
-                z-index: 10000;
-                font-size: 0.9rem;
-                animation: slideIn 0.3s ease-out;
-            `;
-            msgDiv.textContent = message;
-            document.body.appendChild(msgDiv);
-
-            setTimeout(() => {
-                msgDiv.style.animation = 'slideOut 0.3s ease-in';
-                setTimeout(() => msgDiv.remove(), 300);
-            }, 3000);
-        }
 
         let chart;
 
@@ -4123,6 +3760,9 @@
             }
 
             const deceasedIcon = person.viu === 'No' ? ' 🕊️' : '';
+            const noReminderBadge = person.enviarRecordatoris === false
+                ? ' <span title="Sense recordatoris" style="font-size:0.72em; background:#ffc107; color:#333; border-radius:3px; padding:1px 4px; margin-left:2px;">🔕</span>'
+                : '';
 
             // Formato de fecha según estado
             const birthday = formatBirthdayDisplay(person);
@@ -4132,7 +3772,7 @@
                     ${iconContent}
                 </div>
                 <div class="family-list-info">
-                    <div class="family-list-name">${person.nom}${deceasedIcon}</div>
+                    <div class="family-list-name">${person.nom}${deceasedIcon}${noReminderBadge}</div>
                     <div class="family-list-details">
                         🎂 ${birthday}${ageInfo ? ' • ' + ageInfo : ''}
                     </div>
@@ -4330,6 +3970,9 @@
             }
 
             const deceasedIcon = person.viu === 'No' ? ' 🕊️' : '';
+            const noReminderBadge = person.enviarRecordatoris === false
+                ? ' <span title="Sense recordatoris" style="font-size:0.72em; background:#ffc107; color:#333; border-radius:3px; padding:1px 4px; margin-left:2px;">🔕</span>'
+                : '';
 
             let ageInfo = '';
             if (person.anyNaixement) {
@@ -4342,7 +3985,7 @@
                     ${iconContent}
                 </div>
                 <div class="relation-mini-info">
-                    <div class="relation-mini-name">${person.nom}${deceasedIcon}</div>
+                    <div class="relation-mini-name">${person.nom}${deceasedIcon}${noReminderBadge}</div>
                     <div class="relation-mini-detail">${ageInfo}</div>
                 </div>
             `;
@@ -4965,6 +4608,7 @@
             document.getElementById('formLlocNaixement').value = '';
             document.getElementById('formAnyMort').value = '';
             document.getElementById('formAnyMortContainer').style.display = 'none';
+            document.getElementById('formEnviarRecordatoris').checked = true;
 
             // Poblar dropdowns de relaciones
             populateFamilyDropdowns();
@@ -5000,6 +4644,7 @@
             // Cargar nuevos campos
             document.getElementById('formLlocNaixement').value = currentEditingPerson.llocNaixement || '';
             document.getElementById('formAnyMort').value = currentEditingPerson.anyMort || '';
+            document.getElementById('formEnviarRecordatoris').checked = currentEditingPerson.enviarRecordatoris !== false;
 
             // Mostrar anyMort si persona está fallecida
             if (currentEditingPerson.viu === 'No') {
@@ -5159,7 +4804,8 @@
             const isEditing = currentEditingIndex >= 0;
             const oldBirthday = isEditing ? { ...dadesAniversaris[currentEditingIndex] } : null; // Deep copy para preservar rowNumber
 
-            const newBirthday = { nom, dia, mes, anyNaixement, telefon, email, genere, viu, pareId, mareId, parellaId, urlFoto, estatRelacio, llocNaixement, anyMort };
+            const enviarRecordatoris = document.getElementById('formEnviarRecordatoris').checked;
+            const newBirthday = { nom, dia, mes, anyNaixement, telefon, email, genere, viu, pareId, mareId, parellaId, urlFoto, estatRelacio, llocNaixement, anyMort, enviarRecordatoris };
 
             // Si está editando, preservar rowNumber del dato antiguo
             if (isEditing && oldBirthday && oldBirthday.rowNumber) {
@@ -6010,8 +5656,8 @@
 
 <script>
 (function() {
-    // ⚠️ IMPORTANTE: Cambia esta URL después de desplegar en Railway
-    const RAILWAY_API_URL = 'https://family-agents-sdk-production.up.railway.app/chat';
+    // API de Chat: Supabase Edge Function (migrado de Railway)
+    const CHAT_API_URL = `${SUPABASE_URL}/functions/v1/chat`;
     
     // Elementos del DOM
     const toggleBtn = document.getElementById('chat-toggle');
@@ -6211,10 +5857,12 @@
                 });
             }
 
-            const response = await fetch(RAILWAY_API_URL, {
+            const response = await fetch(CHAT_API_URL, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${SUPABASE_ANON_KEY}`,
+                    'apikey': SUPABASE_ANON_KEY
                 },
                 body: JSON.stringify({
                     message: message || 'Analitza aquest arxiu',
@@ -6243,8 +5891,8 @@
             console.error('Error:', error);
 
             // Mensaje de error más informativo
-            if (RAILWAY_API_URL.includes('tu-app.railway.app')) {
-                addMessage('⚠️ Configura la URL de Railway en el codi (línia 5947). Consulta el README.', false);
+            if (SUPABASE_URL.includes('TU_PROYECTO')) {
+                addMessage('⚠️ Configura la URL de Supabase en supabase-client.js. Consulta SUPABASE-MIGRATION.md', false);
             } else {
                 addMessage('Ho sento, hi ha hagut un error. Torna-ho a intentar. 😔', false);
             }
