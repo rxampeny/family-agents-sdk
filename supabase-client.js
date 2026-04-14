@@ -24,41 +24,32 @@ async function fetchBirthdays() {
     return json.data || [];
 }
 
-async function addBirthdayToSheet(data) {
+async function gasPost(payload) {
+    // GAS no suporta preflight CORS, cal usar 'text/plain' en lloc de 'application/json'
     const res = await fetch(GAS_URL, {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ action: 'CREATE', data })
+        headers: { 'Content-Type': 'text/plain' },
+        body: JSON.stringify(payload),
+        redirect: 'follow'
     });
     return res.json();
+}
+
+async function addBirthdayToSheet(data) {
+    return gasPost({ action: 'CREATE', data });
 }
 
 async function addBirthdayToSheetForzado(data) {
-    const res = await fetch(GAS_URL, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ action: 'CREATE_FORCE', data })
-    });
-    return res.json();
+    return gasPost({ action: 'CREATE_FORCE', data });
 }
 
 async function updateBirthdayInSheet(oldData, newData) {
-    const res = await fetch(GAS_URL, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ action: 'UPDATE', oldData, newData })
-    });
-    const json = await res.json();
+    const json = await gasPost({ action: 'UPDATE', oldData, newData });
     return json.success;
 }
 
 async function deleteBirthdayFromSheet(data) {
-    const res = await fetch(GAS_URL, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ action: 'DELETE', data })
-    });
-    const json = await res.json();
+    const json = await gasPost({ action: 'DELETE', data });
     return json.success;
 }
 
@@ -70,12 +61,7 @@ async function sendBirthdayEmailsManually() {
     const btn = document.getElementById('sendEmailsBtn');
     if (btn) btn.disabled = true;
     try {
-        const res = await fetch(GAS_URL, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ action: 'SEND_EMAILS' })
-        });
-        const json = await res.json();
+        const json = await gasPost({ action: 'SEND_EMAILS' });
         if (json.success) {
             showSyncMessage('✅ Emails enviats correctament', false);
         } else {
@@ -92,12 +78,7 @@ async function sendBirthdaySMSManually() {
     const btn = document.getElementById('sendSmsBtn');
     if (btn) btn.disabled = true;
     try {
-        const res = await fetch(GAS_URL, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ action: 'SEND_SMS' })
-        });
-        const json = await res.json();
+        const json = await gasPost({ action: 'SEND_SMS' });
         if (json.success) {
             showSyncMessage('✅ SMS enviats correctament', false);
         } else {
