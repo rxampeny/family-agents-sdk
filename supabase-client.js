@@ -7,7 +7,7 @@ const GAS_URL = 'https://script.google.com/macros/s/AKfycbyH_zxFyGjYs2oT-fvssGAn
 
 // URL del backend de Railway (chat IA)
 // Per trobar la URL: Railway dashboard → projecte → Service → Settings → Domains
-const SUPABASE_URL = 'https://TU_PROYECTO.up.railway.app'; // TODO: substituir per la URL real de Railway
+const SUPABASE_URL = 'https://family-agents-sdk-production.up.railway.app';
 const SUPABASE_ANON_KEY = ''; // Railway no usa Supabase auth key
 
 // ============================================================
