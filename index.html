@@ -2459,12 +2459,12 @@
         ];
 
         // ============================================
-        // API SUPABASE (cargado desde supabase-client.js)
-        // Las funciones fetchBirthdays, addBirthdayToSheet,
+        // BACKEND CLIENT (carregat des de backend-client.js)
+        // Les funcions fetchBirthdays, addBirthdayToSheet,
         // addBirthdayToSheetForzado, updateBirthdayInSheet,
         // deleteBirthdayFromSheet, sendBirthdayEmailsManually,
-        // sendBirthdaySMSManually, showMaintenanceMode y
-        // showSyncMessage están definidas en supabase-client.js
+        // sendBirthdaySMSManually, showMaintenanceMode i
+        // showSyncMessage estan definides a backend-client.js
         // ============================================
 
         let chart;
@@ -5874,7 +5874,7 @@
 
             // Mensaje de error más informativo
             if (SUPABASE_URL.includes('TU_PROYECTO')) {
-                addMessage('⚠️ Configura la URL de Supabase en supabase-client.js. Consulta SUPABASE-MIGRATION.md', false);
+                addMessage('⚠️ Configura la URL del backend Railway a backend-client.js (constant SUPABASE_URL).', false);
             } else {
                 addMessage('Ho sento, hi ha hagut un error. Torna-ho a intentar. 😔', false);
             }

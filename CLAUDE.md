@@ -12,7 +12,7 @@ Guia tècnica per a Claude Code. Actualitzada: 2026-04-14.
 | Repositori | GitHub | https://github.com/rxampeny/family-agents-sdk |
 | Desplegament frontend | Netlify auto-deploy en push a `master` | — |
 
-**NO s'usa Supabase.** El fitxer `supabase-client.js` és el connector al GAS + Railway (nom heretat de migració inacabada).
+**NO s'usa Supabase.** El fitxer `backend-client.js` és el connector al GAS + Railway (nom heretat de migració inacabada).
 
 ---
 
@@ -20,7 +20,7 @@ Guia tècnica per a Claude Code. Actualitzada: 2026-04-14.
 
 ```
 index.html (Netlify)
-  ├── supabase-client.js ──→ Google Apps Script ──→ Google Sheets
+  ├── backend-client.js ──→ Google Apps Script ──→ Google Sheets
   │                               │ triggers automàtics
   │                             Twilio SMS / Gmail
   └── Chat "Assistència Familiar" ──→ Railway FastAPI ──→ GPT-4o
@@ -45,7 +45,7 @@ index.html (Netlify)
 
 ### Frontend (Netlify)
 - **`index.html`** (~6000 línies) — app completa monolítica (HTML + CSS + JS tot inline)
-- **`supabase-client.js`** — connector al backend. Defineix `GAS_URL`, `SUPABASE_URL` (Railway), i implementa totes les funcions CRUD + emails/SMS
+- **`backend-client.js`** — connector al backend. Defineix `GAS_URL`, `SUPABASE_URL` (Railway), i implementa totes les funcions CRUD + emails/SMS
 - **`netlify.toml`** — redirects SPA (/* → /index.html)
 - **`test-google-sheets-api.html`** — eina de test per verificar connexió amb GAS
 
@@ -159,14 +159,14 @@ Si el servei dorm (sleeping), es desperta sol amb la primera petició (~30s).
 ## Troubleshooting
 
 ### Botons "Enviar emails" / "Enviar SMS" → "Error de connexió"
-- Verificar que `supabase-client.js` usa `Content-Type: 'text/plain'` a `gasPost()`
+- Verificar que `backend-client.js` usa `Content-Type: 'text/plain'` a `gasPost()`
 - Obrir F12 > Network, buscar la petició fallida per veure l'error real
 - Comprovar que el GAS està desplegat i accessible
 
 ### Chat no respon
 - Primera petició pot trigar ~30s si Railway estava dormint
 - Health check: https://family-agents-sdk-production.up.railway.app/health
-- Verificar `SUPABASE_URL` a `supabase-client.js`
+- Verificar `SUPABASE_URL` a `backend-client.js`
 
 ### Dades no sincronitzen / CRUD no funciona
 - Si la web mostra dades velles: és el caché localStorage (funciona sense connexió)
@@ -174,7 +174,7 @@ Si el servei dorm (sleeping), es desperta sol amb la primera petició (~30s).
 - GAS no desplegat? Redesplegar: Deploy > Manage deployments > Edit > Save new version
 
 ### "X is not defined" a la consola
-- Si les funcions `fetchBirthdays`, `sendBirthdayEmailsManually`, etc. no estan definides: `supabase-client.js` no s'ha carregat correctament
+- Si les funcions `fetchBirthdays`, `sendBirthdayEmailsManually`, etc. no estan definides: `backend-client.js` no s'ha carregat correctament
 - Verificar que el fitxer existeix al deploy (deploy-manifest.json)
 
 ---
