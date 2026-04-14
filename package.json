@@ -1,19 +1,11 @@
 {
-  "name": "victor-catala-chatbot",
-  "version": "1.0.0",
-  "description": "Chatbot para Victor Català",
-  "main": "chatgptbot.js",
+  "name": "family-aniversaris",
+  "version": "2.0.0",
+  "description": "App familiar de gestió d'aniversaris — Netlify + Google Apps Script + Railway",
   "scripts": {
-    "start": "node chatgptbot.js",
-    "deploy": "netlify deploy --prod",
-    "deploy:draft": "netlify deploy",
+    "deploy": "git push origin master",
     "netlify:status": "netlify status",
     "netlify:open": "netlify open"
-  },
-  "dependencies": {
-    "cors": "^2.8.5",
-    "express": "^4.18.2",
-    "openai": "^4.20.0"
   },
   "devDependencies": {
     "netlify-cli": "^23.12.3"

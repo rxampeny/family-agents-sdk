@@ -1,249 +1,185 @@
-# CLAUDE.md
+# CLAUDE.md — Aniversaris Familiars
 
-This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
+Guia tècnica per a Claude Code. Actualitzada: 2026-04-14.
 
-# Aniversaris familiars
+## Stack tecnològic
 
-Birthday management web app for family with automatic SMS and email notifications.
+| Capa | Tecnologia | URL / Ubicació |
+|------|-----------|----------------|
+| Frontend | HTML/CSS/JS (Netlify) | https://family-aniversaris.netlify.app/ |
+| Dades CRUD | Google Apps Script → Google Sheets | veure URL a baix |
+| Chat IA | FastAPI + GPT-4o (Railway) | https://family-agents-sdk-production.up.railway.app |
+| Repositori | GitHub | https://github.com/rxampeny/family-agents-sdk |
+| Desplegament frontend | Netlify auto-deploy en push a `master` | — |
 
-## Architecture Overview
+**NO s'usa Supabase.** El fitxer `supabase-client.js` és el connector al GAS + Railway (nom heretat de migració inacabada).
 
-**Frontend-only static app** hosted on Netlify that connects to a Google Apps Script backend:
+---
 
-- **Frontend:** Single-page app in `index.html` (contains all HTML, CSS, and JavaScript inline)
-- **Backend:** Google Apps Script (`Code.gs` - not in repo due to credentials)
-- **Database:** Google Sheets as data store
-- **APIs:** Twilio (SMS), Gmail (email notifications)
-- **Language:** Interface is in Catalan
-
-### Key Files
-
-- `index.html` - Main app (3400+ lines, contains entire frontend)
-- `Code.gs` - Google Apps Script backend (excluded from git, stored only in Google Apps Script editor)
-- `chatgptbot.js` - Unused Express/OpenAI chatbot (legacy file, not deployed)
-- `public/` - Static assets (JSON data snapshots, icons)
-- `test-*.html` - Test utilities for API connectivity
-
-### Data Flow
+## Arquitectura
 
 ```
-index.html (user interface)
-    ↓ fetch()
-Google Apps Script API (AKfycbyH_zxFy...)
-    ↓
-Google Sheet (19ixIeSMF93UQKOoJ...)
-    ↓ triggers
-Code.gs functions → Twilio SMS / Gmail
+index.html (Netlify)
+  ├── supabase-client.js ──→ Google Apps Script ──→ Google Sheets
+  │                               │ triggers automàtics
+  │                             Twilio SMS / Gmail
+  └── Chat "Assistència Familiar" ──→ Railway FastAPI ──→ GPT-4o
 ```
 
-## Google Sheets Structure
+---
 
-**Sheet ID:** `19ixIeSMF93UQKOoJGu7o_lsBCAqnf4Eo7CAIwtKMMI0`
+## URLs importants
 
-Columns (A-AJ):
+| Recurs | URL |
+|--------|-----|
+| App producció | https://family-aniversaris.netlify.app/ |
+| Repo GitHub | https://github.com/rxampeny/family-agents-sdk |
+| Railway backend | https://family-agents-sdk-production.up.railway.app |
+| Google Apps Script | https://script.google.com/macros/s/AKfycbyH_zxFyGjYs2oT-fvssGAnNNXavfZmWeoXW6coCOGoNxTOqHAqTjgNYz7chxG2Kang3g/exec |
+| Google Sheet | https://docs.google.com/spreadsheets/d/19ixIeSMF93UQKOoJGu7o_lsBCAqnf4Eo7CAIwtKMMI0/edit |
+| Railway dashboard | https://railway.com/project/351f2ae7-2859-4591-83cc-d681d46dcc95 |
+
+---
+
+## Fitxers clau
+
+### Frontend (Netlify)
+- **`index.html`** (~6000 línies) — app completa monolítica (HTML + CSS + JS tot inline)
+- **`supabase-client.js`** — connector al backend. Defineix `GAS_URL`, `SUPABASE_URL` (Railway), i implementa totes les funcions CRUD + emails/SMS
+- **`netlify.toml`** — redirects SPA (/* → /index.html)
+- **`test-google-sheets-api.html`** — eina de test per verificar connexió amb GAS
+
+### Backend dades (Google Apps Script)
+- **`Aniversaris.gs`** — **NO és al repo**, viu a l'editor Apps Script del Google Sheet (conté credencials Twilio). Accedir: Extensions > Apps Script des del Sheet.
+
+### Backend chat (Railway)
+- **`backend/main.py`** — FastAPI + OpenAI Agents SDK (gpt-4o, respon en català)
+- **`backend/requirements.txt`** — dependències Python
+- **`backend/Procfile`** — `web: uvicorn main:app --host 0.0.0.0 --port $PORT`
+- **`backend/railway.json`** — configuració Railway (NIXPACKS)
+
+---
+
+## API Google Apps Script
+
+**URL:** `https://script.google.com/macros/s/AKfycbyH_.../exec`
+
+> **IMPORTANT CORS:** Sempre usar `Content-Type: 'text/plain'` (no `application/json`) per evitar el preflight OPTIONS que GAS no suporta.
+
+| Mètode | Body | Acció |
+|--------|------|-------|
+| GET | — | Llegir tots els aniversaris |
+| POST | `{action: 'CREATE', data: {...}}` | Afegir persona |
+| POST | `{action: 'CREATE_FORCE', data: {...}}` | Afegir sense validar duplicats |
+| POST | `{action: 'UPDATE', oldData: {...}, newData: {...}}` | Actualitzar |
+| POST | `{action: 'DELETE', data: {...}}` | Eliminar |
+| POST | `{action: 'SEND_EMAILS'}` | Enviar emails manualment |
+| POST | `{action: 'SEND_SMS'}` | Enviar SMS manualment |
+
+Resposta GET: `{ success: true, data: [...], count: N }`
+Resposta POST: `{ success: true/false, error?: '...' }`
+Mode manteniment: `{ maintenance: true, message: '...' }`
+
+## API Railway (chat)
+
+**URL:** `https://family-agents-sdk-production.up.railway.app`
+
+| Mètode | Endpoint | Descripció |
+|--------|----------|------------|
+| POST | `/chat` | Enviar missatge al chat familiar |
+| GET | `/health` | Health check (pot trigar si estava dormint) |
+| GET | `/` | Status |
+
+---
+
+## Estructura Google Sheets
+
+**Sheet ID:** `19ixIeSMF93UQKOoJGu7o_lsBCAqnf4Eo7CAIwtKMMI0` · **Full:** `Aniversaris`
 
 | Col | Camp | Descripció |
 |-----|------|------------|
-| A | Nom | Nombre |
-| B | Dia | Día nacimiento |
-| C | Mes | Mes nacimiento |
-| D | AnyNaixement | Año nacimiento |
-| E | Telefon | Teléfono (+34...) |
-| F | Email | Correo electrónico |
+| A | Nom | Nom complet |
+| B | Dia | Dia de naixement |
+| C | Mes | Mes de naixement |
+| D | AnyNaixement | Any de naixement |
+| E | Telefon | Telèfon (+34...) |
+| F | Email | Correu electrònic |
 | G | Gènere | Masculí/Femení |
-| H | Viu | Sí/No (vivo/fallecido) |
-| I | Última modificació | Timestamp última modificación |
-| J | Pare ID | ID del padre |
-| K | Mare ID | ID de la madre |
-| L | Parella ID | ID de la pareja |
-| M | URL Foto | Enlace a foto |
-| N | estatRelacio | Estado de la relación |
-| O | Lloc Naixement | Lugar de nacimiento |
-| P | Any Mort | Año de fallecimiento |
-| Q | Eliminados - Nom | Log borrados: Nombre |
-| R | Eliminados - Dia | Log borrados: Día |
-| S | Eliminados - Mes | Log borrados: Mes |
-| T | Eliminados - AnyNaixement | Log borrados: Año |
-| U | Eliminados - Telèfon | Log borrados: Teléfono |
-| V | Eliminados - Email | Log borrados: Email |
-| W | Eliminados - Gènere | Log borrados: Género |
-| X | Eliminados - Viu | Log borrados: Vivo |
-| Y | Eliminados - Data | Log borrados: Fecha borrado |
-| Z | Manteniment | Flag modo mantenimiento (Z2) |
-| AA | Log - Email | Log emails: Destinatario |
-| AB | Log - Data | Log emails: Fecha |
-| AC | Log - Estat | Log emails: Estado |
-| AD | Log - Error | Log emails: Error |
-| AE | Log - Nom | Log emails: Nombre |
-| AF | SMS - Telèfon | Log SMS: Teléfono |
-| AG | SMS - Data | Log SMS: Fecha |
-| AH | SMS - Estat | Log SMS: Estado |
-| AI | SMS - Error | Log SMS: Error |
-| AJ | SMS - Nom | Log SMS: Nombre |
+| H | Viu | Sí/No (viu/difunt) — `No` = icona 🕊️, sense notificacions |
+| I | Última modificació | Timestamp últim canvi |
+| J | Pare ID | rowNumber del pare |
+| K | Mare ID | rowNumber de la mare |
+| L | Parella ID | rowNumber de la parella |
+| M | URL Foto | Foto de la persona |
+| N | estatRelacio | Estat de la relació |
+| O | Lloc Naixement | Lloc de naixement |
+| P | Any Mort | Any de defunció |
+| Q-Y | Eliminados - ... | Log de persones eliminades |
+| Z | Manteniment | Z2 = "SI" activa mode manteniment |
+| AA-AE | Log - Email | Log d'emails enviats |
+| AF-AJ | Log - SMS | Log de SMS enviats |
 
-## API Endpoints
+---
 
-**Google Apps Script URL:**
-```
-https://script.google.com/macros/s/AKfycbyH_zxFyGjYs2oT-fvssGAnNNXavfZmWeoXW6coCOGoNxTOqHAqTjgNYz7chxG2Kang3g/exec
-```
+## Desplegament
 
-**Methods:**
-- GET `?action=getAllBirthdays` - Fetch all birthdays
-- POST `{action: 'add', ...}` - Add new person
-- POST `{action: 'update', ...}` - Update existing person
-- POST `{action: 'delete', ...}` - Soft delete person
-- POST `{action: 'sendBirthday', ...}` - Manual birthday greeting
-- POST `{action: 'testTwilio'}` - Test Twilio SMS
-- POST `{action: 'testEmail'}` - Test email
-
-## Key Features
-
-### 1. Birthday Management
-- Add/edit/delete people with birthdays
-- Supports deceased people (marked with `Viu: "No"`)
-- Deceased people appear in calendar but don't receive notifications
-
-### 2. Automatic Reminders
-- Daily trigger (configured in Google Apps Script) checks for tomorrow's birthdays
-- Sends reminder emails to ALL family members the day before
-- SMS optional (disabled by default to save costs)
-- Only sends to living people (`Viu: "Sí"`)
-
-### 3. Birthday Greetings
-- Manual sending via UI or automatic triggers
-- SMS via Twilio (costs ~€0.07 per message)
-- Email via Gmail (free up to 500/day)
-- Tracks sent messages in Sheet columns
-
-### 4. Statistics Dashboard
-- Birthday distribution by month (Chart.js)
-- Gender distribution
-- Age statistics
-- Deceased people marked with 🕊️ icon
-
-## Development Commands
-
+### Frontend (Netlify) — auto-deploy via GitHub
 ```bash
-# Install dependencies
-npm install
-
-# Deploy to production
-npm run deploy
-
-# Deploy draft (testing)
-npm run deploy:draft
-
-# Check Netlify status
-npm run netlify:status
-
-# Open Netlify dashboard
-npm run netlify:open
+git add .
+git commit -m "descripció del canvi"
+git push origin master
+# Netlify fa l'auto-deploy (~1-2 min)
 ```
 
-## Deployment
+### Backend chat (Railway)
+Railway fa l'auto-deploy automàticament quan `backend/` canvia al push.
+Si el servei dorm (sleeping), es desperta sol amb la primera petició (~30s).
 
-**Production URL:** https://family-aniversaris.netlify.app/
-**Repository:** https://github.com/rxampeny/family
+### Backend dades (Google Apps Script)
+1. Obrir Google Sheet → Extensions > Apps Script
+2. Editar `Aniversaris.gs` (CRUD + emails + SMS + triggers)
+3. Desplegar: Deploy > Manage deployments > Edit > **Save new version**
+4. Verificar: "Execute as: Me", "Who has access: Anyone"
 
-### Method 1: Automatic (GitHub)
-Push to `master` branch triggers Netlify auto-deploy (if configured).
+---
 
-### Method 2: Manual via CLI
-```bash
-npm run deploy
-```
+## Funcionalitats
 
-### Method 3: Netlify Dashboard
-Drag files to [app.netlify.com](https://app.netlify.com)
+- **CRUD aniversaris** — afegir, editar, eliminar persones
+- **Calendari interactiu** — swipe entre mesos
+- **Notificacions automàtiques** — emails i SMS el dia de l'aniversari (trigger GAS a les 8h)
+- **Recordatoris** — email + SMS el dia anterior (trigger GAS a les 20h)
+- **Persones difuntes** — icona 🕊️, no reben notificacions
+- **Estadístiques** — distribució per mes, gènere, edats (Chart.js)
+- **Arbre genealògic** — visualització amb D3.js
+- **Chat IA "Assistència Familiar"** — GPT-4o, respon en català sobre l'arbre familiar
 
-## Important Implementation Notes
-
-### Working with index.html
-- **Monolithic file:** All HTML, CSS, and JavaScript in one 116KB file
-- **Line 1470:** Google Apps Script URL constant
-- **Inline styles:** CSS starts at line ~22
-- **JavaScript:** Starts after HTML (~line 1000+)
-- When editing, search for function names or section comments
-
-### Google Apps Script (Code.gs)
-- **Location:** Google Apps Script editor (Extensions > Apps Script from Sheet)
-- **Not in repo:** Contains Twilio credentials (Account SID, Auth Token)
-- **Key functions:**
-  - `doGet(e)` - Handle GET requests
-  - `doPost(e)` - Handle POST requests
-  - `sendBirthdayReminders()` - Daily reminder trigger
-  - `getTomorrowBirthdays()` - Check next day's birthdays
-  - `sendBirthdaySMS()` / `sendBirthdayEmail()` - Send greetings
-
-### Testing Changes
-1. Test locally by opening `index.html` in browser
-2. API calls will hit production Google Apps Script
-3. Test with `test-google-sheets-api.html` for API connectivity
-4. Use `test-simple.html` for minimal testing
-
-### Automatic Reminder Setup
-Configure in Google Apps Script:
-1. Open Apps Script editor (from Sheet)
-2. Click Triggers (⏰ icon)
-3. Add trigger:
-   - Function: `sendBirthdayReminders`
-   - Event: Time-driven
-   - Type: Day timer
-   - Time: 20:00-21:00 (8-9 PM)
-
-## Security Considerations
-
-- `Code.gs` excluded from repo (contains Twilio credentials)
-- No authentication on frontend (family-only app)
-- Google Apps Script URL is public but actions are logged
-- Phone numbers and emails are sensitive data
-
-## Cost Management
-
-- **SMS:** ~€0.07 per message via Twilio
-- **Email:** Free (Gmail quota: 500/day)
-- **Hosting:** Free (Netlify)
-- **Recommendation:** Use email for reminders, SMS only for direct birthday greetings
-
-## Common Modifications
-
-### Update greeting messages
-Edit `Code.gs` functions:
-- `generateBirthdayEmail()` - Email template
-- `generateBirthdaySMS()` - SMS text
-- `generateReminderEmail()` - Reminder email
-- `generateReminderSMS()` - Reminder SMS
-
-### Add new person fields
-1. Add column to Google Sheet
-2. Update `Code.gs` data parsing
-3. Update `index.html` form and table rendering
-
-### Change UI styling
-All CSS is inline in `index.html` starting ~line 22. Look for the `<style>` tag.
+---
 
 ## Troubleshooting
 
-### "Error de connexió amb el servidor"
-- Check Google Apps Script URL is correct (line 1470 in index.html)
-- Verify Code.gs is deployed (Deploy > New deployment in Apps Script)
-- Check browser console for CORS or network errors
+### Botons "Enviar emails" / "Enviar SMS" → "Error de connexió"
+- Verificar que `supabase-client.js` usa `Content-Type: 'text/plain'` a `gasPost()`
+- Obrir F12 > Network, buscar la petició fallida per veure l'error real
+- Comprovar que el GAS està desplegat i accessible
 
-### Reminders not sending
-- Verify trigger exists in Apps Script (⏰ Triggers)
-- Check tomorrow actually has birthdays (`testBirthdayReminders()`)
-- Check maintenance mode is off (cell Z2 in Sheet)
+### Chat no respon
+- Primera petició pot trigar ~30s si Railway estava dormint
+- Health check: https://family-agents-sdk-production.up.railway.app/health
+- Verificar `SUPABASE_URL` a `supabase-client.js`
 
-### SMS not working
-- Verify Twilio credentials in Code.gs
-- Check phone format (Spain format: +34...)
-- Test with `testTwilio` action via API
+### Dades no sincronitzen / CRUD no funciona
+- Si la web mostra dades velles: és el caché localStorage (funciona sense connexió)
+- Mode manteniment actiu? Verificar cel·la Z2 del Sheet (ha de ser buit o "NO")
+- GAS no desplegat? Redesplegar: Deploy > Manage deployments > Edit > Save new version
 
-## File Versions
+### "X is not defined" a la consola
+- Si les funcions `fetchBirthdays`, `sendBirthdayEmailsManually`, etc. no estan definides: `supabase-client.js` no s'ha carregat correctament
+- Verificar que el fitxer existeix al deploy (deploy-manifest.json)
 
-Note: Multiple documentation files exist from development iterations:
-- `INSTRUCCIONES-RECORDATORIOS.md` - Reminder system setup guide
-- `INSTRUCCIONES-PERSONAS-FALLECIDAS.md` - Deceased people feature
-- `PROYECTO-COMPLETADO.md` - Project completion summary
-- These are reference docs, not build artifacts
+---
+
+## Seguretat
+- `Aniversaris.gs` **NO** al repo (conté credencials Twilio: SID, Token, telèfon)
+- No hi ha autenticació al frontend (app familiar privada, accés per contrasenya simple)
+- La URL del GAS és pública però les accions queden registrades al Sheet
